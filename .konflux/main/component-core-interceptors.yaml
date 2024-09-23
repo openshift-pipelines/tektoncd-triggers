@@ -1,0 +1,17 @@
+---
+apiVersion: appstudio.redhat.com/v1alpha1
+kind: Component
+metadata:
+  annotations:
+    image.redhat.com/generate: "true"
+    build.appstudio.openshift.io/pipeline: '{"name":"docker-build","bundle":"latest"}'
+    image.redhat.com/generate: '{"visibility": "public"}'
+  name: core-interceptors
+spec:
+  componentName: core-interceptors
+  application: tektoncd-triggers-main
+  source:
+    git:
+      url: https://github.com/openshift-pipelines/tektoncd-triggers
+      dockerfileUrl: openshift/dockerfiles/core-interceptors.Dockerfile
+      revision: main
