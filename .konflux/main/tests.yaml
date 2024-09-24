@@ -2,7 +2,7 @@
 apiVersion: appstudio.redhat.com/v1beta2
 kind: IntegrationTestScenario
 metadata:
-  name: tektoncd-triggers-enterprise-contract
+  name: tektoncd-triggers-main-enterprise-contract
 spec:
   application: tektoncd-triggers-main
   contexts:
