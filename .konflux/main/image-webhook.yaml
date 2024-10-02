@@ -1,0 +1,14 @@
+---
+apiVersion: appstudio.redhat.com/v1alpha1
+kind: ImageRepository
+metadata:
+  name: tektoncd-triggers-main-webhook
+  annotations:
+    image-controller.appstudio.redhat.com/update-component-image: "true"
+  labels:
+    appstudio.redhat.com/component: tektoncd-triggers-main-webhook
+    appstudio.redhat.com/application: tektoncd-triggers-main
+spec:
+  image:
+   name: tektoncd-triggers-main/webhook
+   visibility: public
