@@ -10,8 +10,7 @@ metadata:
       == "main" &&
       ("upstream/***".pathChanged() || "openshift/patches/***".pathChanged() || "openshift/rpms/***".pathChanged() ||
       "openshift/dockerfiles/eventlistenersink.Dockerfile".pathChanged() ||
-      ".tekton/eventlistenersink-pull-request.yaml".pathChanged() ||
-      ".tekton/eventlistenersink-push.yaml".pathChanged() ||
+      ".tekton/tektoncd-triggers-main-eventlistenersink-push.yaml".pathChanged() ||
       ".tekton/docker-build.yaml".pathChanged())
   creationTimestamp: null
   labels:
