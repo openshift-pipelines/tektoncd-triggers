@@ -39,6 +39,10 @@ spec:
   - name: prefetch-input
     value: |
       {"type": "rpm", "path": "openshift/rpms"}
+  - name: build-platforms
+    value:
+      - linux/ppc64le
+      - linux/s390x
   pipelineRef:
     name: docker-build
   workspaces:
