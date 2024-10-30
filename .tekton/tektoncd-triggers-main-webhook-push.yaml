@@ -32,7 +32,7 @@ spec:
     value: openshift/dockerfiles/webhook.Dockerfile
   - name: prefetch-input
     value: |
-      {"type": "rpm", "path": "openshift/rpms"}
+      {"type": "rpm", "path": ".konflux/rpms"}
   pipelineRef:
     name: docker-build-ta
   workspaces:
