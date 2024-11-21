@@ -8,17 +8,17 @@ metadata:
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
     pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch
-      == "main" &&
+      == "next" &&
       ("upstream/***".pathChanged() || ".konflux/patches/***".pathChanged() || ".konflux/rpms/***".pathChanged() ||
-      ".konflux/dockerfiles/controller.Dockerfile".pathChanged() ||
-      ".tekton/tektoncd-triggers-main-controller-push.yaml".pathChanged() ||
+      ".konflux/dockerfiles/eventlistenersink.Dockerfile".pathChanged() ||
+      ".tekton/tektoncd-triggers-next-eventlistenersink-push.yaml".pathChanged() ||
       ".tekton/docker-build-ta.yaml".pathChanged())
   creationTimestamp: null
   labels:
-    appstudio.openshift.io/application: tektoncd-triggers-main
-    appstudio.openshift.io/component: tektoncd-triggers-main-controller
+    appstudio.openshift.io/application: tektoncd-triggers-next
+    appstudio.openshift.io/component: tektoncd-triggers-next-eventlistenersink
     pipelines.appstudio.openshift.io/type: build
-  name: tektoncd-triggers-main-controller-on-push
+  name: tektoncd-triggers-next-eventlistenersink-on-push
   namespace: tekton-ecosystem-tenant
 spec:
   params:
@@ -27,9 +27,9 @@ spec:
   - name: revision
     value: '{{revision}}'
   - name: output-image
-    value: quay.io/redhat-user-workloads/tekton-ecosystem-tenant/tektoncd-triggers-main/controller:{{revision}}
+    value: quay.io/redhat-user-workloads/tekton-ecosystem-tenant/tektoncd-triggers-next/eventlistenersink:{{revision}}
   - name: dockerfile
-    value: .konflux/dockerfiles/controller.Dockerfile
+    value: .konflux/dockerfiles/eventlistenersink.Dockerfile
   - name: prefetch-input
     value: |
       {"type": "rpm", "path": ".konflux/rpms"}

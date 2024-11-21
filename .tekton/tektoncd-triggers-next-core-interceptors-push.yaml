@@ -8,17 +8,17 @@ metadata:
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
     pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch
-      == "main" &&
+      == "next" &&
       ("upstream/***".pathChanged() || ".konflux/patches/***".pathChanged() || ".konflux/rpms/***".pathChanged() ||
       ".konflux/dockerfiles/core-interceptors.Dockerfile".pathChanged() ||
-      ".tekton/tektoncd-triggers-main-core-interceptors-push.yaml".pathChanged() ||
+      ".tekton/tektoncd-triggers-next-core-interceptors-push.yaml".pathChanged() ||
       ".tekton/docker-build-ta.yaml".pathChanged())
   creationTimestamp: null
   labels:
-    appstudio.openshift.io/application: tektoncd-triggers-main
-    appstudio.openshift.io/component: tektoncd-triggers-main-core-interceptors
+    appstudio.openshift.io/application: tektoncd-triggers-next
+    appstudio.openshift.io/component: tektoncd-triggers-next-core-interceptors
     pipelines.appstudio.openshift.io/type: build
-  name: tektoncd-triggers-main-core-interceptors-on-push
+  name: tektoncd-triggers-next-core-interceptors-on-push
   namespace: tekton-ecosystem-tenant
 spec:
   params:
@@ -27,7 +27,7 @@ spec:
   - name: revision
     value: '{{revision}}'
   - name: output-image
-    value: quay.io/redhat-user-workloads/tekton-ecosystem-tenant/tektoncd-triggers-main/core-interceptors:{{revision}}
+    value: quay.io/redhat-user-workloads/tekton-ecosystem-tenant/tektoncd-triggers-next/core-interceptors:{{revision}}
   - name: dockerfile
     value: .konflux/dockerfiles/core-interceptors.Dockerfile
   - name: prefetch-input
