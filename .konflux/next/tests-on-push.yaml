@@ -3,12 +3,12 @@
 apiVersion: appstudio.redhat.com/v1beta2
 kind: IntegrationTestScenario
 metadata:
-  name: tektoncd-triggers-main-enterprise-contract-group
+  name: tektoncd-triggers-next-enterprise-contract-push
 spec:
-  application: tektoncd-triggers-main
+  application: tektoncd-triggers-next
   contexts:
     - description: Application testing
-      name: group
+      name: push
   params:
     - name: POLICY_CONFIGURATION
       value: tekton-ecosystem-tenant/tekton-ecosystem-tenant-containers
