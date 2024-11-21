@@ -3,9 +3,9 @@
 apiVersion: appstudio.redhat.com/v1beta2
 kind: IntegrationTestScenario
 metadata:
-  name: tektoncd-triggers-main-enterprise-contract-group
+  name: tektoncd-triggers-next-enterprise-contract-group
 spec:
-  application: tektoncd-triggers-main
+  application: tektoncd-triggers-next
   contexts:
     - description: Application testing
       name: group
