@@ -23,7 +23,7 @@ spec:
         - name: tektoncd-triggers-next-eventlistenersink
           repository: "quay.io/openshift-pipelines/openshift-pipelines-pipelines-triggers-eventlistenersink-rhel8"
           tags: [next]
-  pipeline:
+  tenantPipeline:
     pipelineRef:
       resolver: git
       params:
