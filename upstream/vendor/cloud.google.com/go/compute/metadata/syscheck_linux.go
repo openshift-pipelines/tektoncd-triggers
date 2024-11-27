@@ -1,4 +1,4 @@
-// Copyright 2018 Google LLC
+// Copyright 2024 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,24 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package checker
+//go:build linux
+
+package metadata
 
 import (
-	"github.com/google/cel-go/common/stdlib"
-
-	exprpb "google.golang.org/genproto/googleapis/api/expr/v1alpha1"
+	"os"
+	"strings"
 )
 
-// StandardFunctions returns the Decls for all functions in the evaluator.
-//
-// Deprecated: prefer stdlib.FunctionExprDecls()
-func StandardFunctions() []*exprpb.Decl {
-	return stdlib.FunctionExprDecls()
-}
-
-// StandardTypes returns the set of type identifiers for standard library types.
-//
-// Deprecated: prefer stdlib.TypeExprDecls()
-func StandardTypes() []*exprpb.Decl {
-	return stdlib.TypeExprDecls()
+func systemInfoSuggestsGCE() bool {
+	b, _ := os.ReadFile("/sys/class/dmi/id/product_name")
+	name := strings.TrimSpace(string(b))
+	return name == "Google" || name == "Google Compute Engine"
 }
