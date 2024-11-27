@@ -1,0 +1,8 @@
+apiVersion: appstudio.redhat.com/v1alpha1
+kind: Release
+metadata:
+ name: tektoncd-triggers-next-elease
+ namespace: tekton-ecosystem-tenant
+spec:
+ releasePlan: tektoncd-triggers-next-rp
+ snapshot: tektoncd-triggers-next-snapshot
