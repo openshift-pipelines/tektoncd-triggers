@@ -1,0 +1,36 @@
+apiVersion: appstudio.redhat.com/v1alpha1
+kind: ReleasePlan
+metadata:
+  labels:
+    release.appstudio.openshift.io/auto-release: 'true'
+    release.appstudio.openshift.io/standing-attribution: 'true'
+  name: tektoncd-triggers-next-rp
+  namespace: tekton-ecosystem-tenant
+spec:
+  application: tektoncd-triggers-next
+  data:
+    mapping:
+      components:
+        - name: tektoncd-triggers-next-webhook
+          repository: "quay.io/openshift-pipelines/openshift-pipelines-pipelines-triggers-webhook-rhel8"
+          tags: [next]
+        - name: tektoncd-triggers-next-controller
+          repository: "quay.io/openshift-pipeline/openshift-pipelines-pipelines-triggers-controller-rhel8"
+          tags: [next]
+        - name: tektoncd-triggers-next-core-interceptors
+          repository: "quay.io/openshift-pipelines/openshift-pipelines-pipelines-triggers-core-interceptors-rhel8"
+          tags: [next]
+        - name: tektoncd-triggers-next-eventlistenersink
+          repository: "quay.io/openshift-pipelines/openshift-pipelines-pipelines-triggers-eventlistenersink-rhel8"
+          tags: [next]
+  pipeline:
+    pipelineRef:
+      resolver: git
+      params:
+        - name: url
+          value: "https://github.com/konflux-ci/release-service-catalog.git"
+        - name: revision
+          value: production
+        - name: pathInRepo
+          value: "pipelines/push-to-external-registry/push-to-external-registry.yaml"
+    serviceAccountName: appstudio-pipeline
