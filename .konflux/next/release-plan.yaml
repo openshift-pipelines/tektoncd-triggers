@@ -8,29 +8,17 @@ metadata:
   namespace: tekton-ecosystem-tenant
 spec:
   application: tektoncd-triggers-next
-  data:
-    mapping:
-      components:
-        - name: tektoncd-triggers-next-webhook
-          repository: "quay.io/openshift-pipelines/openshift-pipelines-pipelines-triggers-webhook-rhel8"
-          tags: [next]
-        - name: tektoncd-triggers-next-controller
-          repository: "quay.io/openshift-pipeline/openshift-pipelines-pipelines-triggers-controller-rhel8"
-          tags: [next]
-        - name: tektoncd-triggers-next-core-interceptors
-          repository: "quay.io/openshift-pipelines/openshift-pipelines-pipelines-triggers-core-interceptors-rhel8"
-          tags: [next]
-        - name: tektoncd-triggers-next-eventlistenersink
-          repository: "quay.io/openshift-pipelines/openshift-pipelines-pipelines-triggers-eventlistenersink-rhel8"
-          tags: [next]
   tenantPipeline:
+    serviceAccountName: release-registry-openshift-pipelines-next
     pipelineRef:
       resolver: git
       params:
         - name: url
-          value: "https://github.com/konflux-ci/release-service-catalog.git"
+          value: https://github.com/openshift-pipelines/hack.git
         - name: revision
-          value: production
+          value: main
         - name: pathInRepo
-          value: "pipelines/push-to-external-registry/push-to-external-registry.yaml"
-    serviceAccountName: appstudio-pipeline
+          value: tenantpipelines/pipeline.yaml
+    params:
+      - name: released_version
+        value: 5.0.5
