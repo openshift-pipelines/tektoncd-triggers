@@ -11,14 +11,14 @@ metadata:
       == "main" &&
       ("upstream/***".pathChanged() || ".konflux/patches/***".pathChanged() || ".konflux/rpms/***".pathChanged() ||
       ".konflux/dockerfiles/eventlistenersink.Dockerfile".pathChanged() ||
-      ".tekton/tektoncd-triggers-main-eventlistenersink-push.yaml".pathChanged() ||
+      ".tekton/tektoncd-triggers-next-eventlistenersink-push.yaml".pathChanged() ||
       ".tekton/docker-build-ta.yaml".pathChanged())
   creationTimestamp: null
   labels:
-    appstudio.openshift.io/application: tektoncd-triggers-main
-    appstudio.openshift.io/component: tektoncd-triggers-main-eventlistenersink
+    appstudio.openshift.io/application: tektoncd-triggers-next
+    appstudio.openshift.io/component: tektoncd-triggers-next-eventlistenersink
     pipelines.appstudio.openshift.io/type: build
-  name: tektoncd-triggers-main-eventlistenersink-on-push
+  name: tektoncd-triggers-next-eventlistenersink-on-push
   namespace: tekton-ecosystem-tenant
 spec:
   params:
@@ -27,7 +27,7 @@ spec:
   - name: revision
     value: '{{revision}}'
   - name: output-image
-    value: quay.io/redhat-user-workloads/tekton-ecosystem-tenant/tektoncd-triggers-main/eventlistenersink:{{revision}}
+    value: quay.io/redhat-user-workloads/tekton-ecosystem-tenant/tektoncd-triggers-next/eventlistenersink:{{revision}}
   - name: dockerfile
     value: .konflux/dockerfiles/eventlistenersink.Dockerfile
   - name: build-platforms
