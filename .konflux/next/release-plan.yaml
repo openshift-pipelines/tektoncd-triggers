@@ -9,6 +9,7 @@ metadata:
   name: tektoncd-triggers-next-rp
 spec:
   application: tektoncd-triggers-next
+  target: tekton-ecosystem-tenant
   tenantPipeline:
     serviceAccountName: release-registry-openshift-pipelines-next
     pipelineRef:
