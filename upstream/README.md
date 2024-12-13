@@ -33,7 +33,7 @@ To learn more, see the [Tekton Triggers Overview](docs/README.md).
 
 ## Getting Started
 
-To get started with Tekton Triggers, see the latest version of our docs::
+To get started with Tekton Triggers, see the latest version of our docs:
 
 * [Overview of Tekton Triggers](./docs/README.md)
 * [Setting Up Tekton Triggers](./docs/install.md)
