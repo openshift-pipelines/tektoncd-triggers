@@ -3,17 +3,25 @@
 apiVersion: appstudio.redhat.com/v1beta2
 kind: IntegrationTestScenario
 metadata:
-  name: tektoncd-triggers-main-enterprise-contract-group
+  name: tektoncd-triggers-main-enterprise-contract
 spec:
   application: tektoncd-triggers-main
   contexts:
-    - description: Application testing
-      name: group
+    - description: Application testing for tektoncd-triggers-main-controller
+      name: component_tektoncd-triggers-main-controller
+    - description: Application testing for tektoncd-triggers-main-webhook
+      name: component_tektoncd-triggers-main-webhook
+    - description: Application testing for tektoncd-triggers-main-core-interceptors
+      name: component_tektoncd-triggers-main-core-interceptors
+    - description: Application testing for tektoncd-triggers-main-eventlistenersink
+      name: component_tektoncd-triggers-main-eventlistenersink
   params:
     - name: POLICY_CONFIGURATION
       value: tekton-ecosystem-tenant/tekton-ecosystem-tenant-containers
     - name: TIMEOUT
       value: "15m0s"
+    - name: SINGLE_COMPONENT
+      value: "true"
   resolverRef:
     params:
       - name: url
