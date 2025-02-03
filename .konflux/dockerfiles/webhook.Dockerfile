@@ -13,7 +13,7 @@ RUN go build -ldflags="-X 'knative.dev/pkg/changeset.rev=$(cat HEAD)'" -mod=vend
     ./cmd/webhook
 
 FROM $RUNTIME
-ARG VERSION=triggers-main
+ARG VERSION=triggers-1.18
 
 ENV CONTROLLER=/usr/local/bin/webhook \
     KO_APP=/ko-app \
@@ -23,8 +23,8 @@ COPY --from=builder /tmp/webhook /ko-app/webhook
 COPY head ${KO_DATA_PATH}/HEAD
 
 LABEL \
-      com.redhat.component="openshift-pipelines-triggers-webhook-rhel8-container" \
-      name="openshift-pipelines/pipelines-triggers-webhook-rhel8" \
+      com.redhat.component="openshift-pipelines-triggers-webhook-rhel9-container" \
+      name="openshift-pipelines/pipelines-triggers-webhook-rhel9" \
       version=$VERSION \
       summary="Red Hat OpenShift Pipelines Triggers Webhook" \
       maintainer="pipelines-extcomm@redhat.com" \
