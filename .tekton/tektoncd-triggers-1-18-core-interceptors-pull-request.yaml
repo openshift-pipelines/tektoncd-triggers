@@ -17,7 +17,7 @@ metadata:
       ".tekton/tektoncd-triggers-1-18-core-interceptors-pull-request.yaml".pathChanged())
   creationTimestamp: null
   labels:
-    appstudio.openshift.io/application: tektoncd-triggers-1.18
+    appstudio.openshift.io/application: tektoncd-triggers-1-18
     appstudio.openshift.io/component: tektoncd-triggers-1-18-core-interceptors
     pipelines.appstudio.openshift.io/type: build
   name: tektoncd-triggers-1-18-core-interceptors-on-pull-request
