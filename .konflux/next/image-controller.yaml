@@ -11,5 +11,5 @@ metadata:
     appstudio.redhat.com/application: tektoncd-triggers-next
 spec:
   image:
-   name: tektoncd-triggers-next/controller
+   name: next/triggers-controller-rhel9
    visibility: public
