@@ -11,5 +11,5 @@ metadata:
     appstudio.redhat.com/application: tektoncd-triggers-1-18
 spec:
   image:
-   name: tektoncd-triggers-1-18/eventlistenersink
+   name: 1-18/triggers-eventlistenersink-rhel9
    visibility: public
