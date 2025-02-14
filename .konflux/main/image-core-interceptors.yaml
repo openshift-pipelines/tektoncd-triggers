@@ -11,5 +11,5 @@ metadata:
     appstudio.redhat.com/application: tektoncd-triggers-main
 spec:
   image:
-   name: tektoncd-triggers-main/core-interceptors
+   name: main/triggers-core-interceptors-rhel9
    visibility: public
