@@ -11,5 +11,5 @@ metadata:
     appstudio.redhat.com/application: tektoncd-triggers-1-18
 spec:
   image:
-   name: tektoncd-triggers-1-18/webhook
+   name: 1-18/triggers-webhook-rhel9
    visibility: public
