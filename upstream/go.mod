@@ -1,11 +1,12 @@
 module github.com/tektoncd/triggers
 
-go 1.22
-toolchain go1.22.5
+go 1.22.3
+
+toolchain go1.22.9
 
 require (
 	github.com/GoogleCloudPlatform/cloud-builders/gcs-fetcher v0.0.0-20191203181535-308b93ad1f39
-	github.com/ahmetb/gen-crd-api-reference-docs v0.3.1-0.20220720053627-e327d0730470
+	github.com/ahmetb/gen-crd-api-reference-docs v0.3.1-0.20250210181511-a4e4190827ba
 	github.com/cloudevents/sdk-go/v2 v2.15.2
 	github.com/golang/protobuf v1.5.4
 	github.com/google/cel-go v0.23.2
@@ -31,7 +32,7 @@ require (
 	k8s.io/apimachinery v0.29.13
 	k8s.io/client-go v0.29.13
 	k8s.io/code-generator v0.29.13
-	k8s.io/klog/v2 v2.120.1
+	k8s.io/klog/v2 v2.130.1
 	k8s.io/kube-openapi v0.0.0-20231010175941-2dd684a91f00
 	knative.dev/eventing v0.30.3
 	knative.dev/pkg v0.0.0-20240416145024-0f34a8815650
@@ -139,7 +140,7 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/gengo v0.0.0-20240129211411-f967bbeff4b4 // indirect
-	k8s.io/klog v1.0.0 // indirect
+	k8s.io/gengo/v2 v2.0.0-20240404160639-a0386bf69313 // indirect
 	k8s.io/utils v0.0.0-20240102154912-e7106e64919e // indirect
 	knative.dev/networking v0.0.0-20231017124814-2a7676e912b7 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
