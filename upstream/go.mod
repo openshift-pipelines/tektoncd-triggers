@@ -1,7 +1,8 @@
 module github.com/tektoncd/triggers
 
-go 1.22
-toolchain go1.22.5
+go 1.22.3
+
+toolchain go1.22.9
 
 require (
 	github.com/GoogleCloudPlatform/cloud-builders/gcs-fetcher v0.0.0-20191203181535-308b93ad1f39
@@ -22,7 +23,7 @@ require (
 	go.uber.org/zap v1.27.0
 	golang.org/x/oauth2 v0.25.0
 	golang.org/x/sync v0.10.0
-	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028
+	golang.org/x/xerrors v0.0.0-20240903120638-7835f813f4da
 	google.golang.org/grpc v1.70.0
 	google.golang.org/protobuf v1.36.4
 	gopkg.in/yaml.v2 v2.4.0
