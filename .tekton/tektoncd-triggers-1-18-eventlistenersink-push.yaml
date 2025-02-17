@@ -28,7 +28,7 @@ spec:
   - name: revision
     value: '{{revision}}'
   - name: output-image
-    value: quay.io/redhat-user-workloads/tekton-ecosystem-tenant/tektoncd-triggers-1-18/eventlistenersink:{{revision}}
+    value: quay.io/redhat-user-workloads/tekton-ecosystem-tenant/1-18/triggers-eventlistenersink-rhel9:{{revision}}
   - name: dockerfile
     value: .konflux/dockerfiles/eventlistenersink.Dockerfile
   - name: prefetch-input
