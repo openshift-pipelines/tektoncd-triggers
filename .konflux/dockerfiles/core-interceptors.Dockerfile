@@ -13,7 +13,7 @@ RUN go build -ldflags="-X 'knative.dev/pkg/changeset.rev=$(cat HEAD)'" -mod=vend
     ./cmd/interceptors
 
 FROM $RUNTIME
-ARG VERSION=triggers-main
+ARG VERSION=triggers-next
 
 ENV CONTROLLER=/usr/local/bin/interceptors \
     KO_APP=/ko-app \
@@ -23,8 +23,8 @@ COPY --from=builder /tmp/interceptors /ko-app/interceptors
 COPY head ${KO_DATA_PATH}/HEAD
 
 LABEL \
-      com.redhat.component="openshift-pipelines-triggers-core-interceptors-rhel8-container" \
-      name="openshift-pipelines/pipelines-triggers-core-interceptors-rhel8" \
+      com.redhat.component="openshift-pipelines-triggers-core-interceptors-rhel9-container" \
+      name="openshift-pipelines/pipelines-triggers-core-interceptors-rhel9" \
       version=$VERSION \
       summary="Red Hat OpenShift Pipelines Triggers Core Interceptors" \
       maintainer="pipelines-extcomm@redhat.com" \
@@ -33,7 +33,6 @@ LABEL \
       io.k8s.description="Red Hat OpenShift Pipelines Triggers Core Interceptors" \
       io.openshift.tags="pipelines,tekton,openshift"
 
-RUN microdnf install -y shadow-utils
 RUN groupadd -r -g 65532 nonroot && useradd --no-log-init -r -u 65532 -g nonroot nonroot
 USER 65532
 
