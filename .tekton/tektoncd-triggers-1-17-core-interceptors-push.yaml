@@ -5,21 +5,21 @@ metadata:
   annotations:
     pipelinesascode.tekton.dev/cancel-in-progress: "true" # Cancel in-progress pipelines
     pipelinesascode.tekton.dev/pipeline: "https://raw.githubusercontent.com/openshift-pipelines/operator/refs/heads/main/.tekton/docker-build-ta.yaml"
-    build.appstudio.openshift.io/repo: https://github.com/openshift-pipelines/tektoncd-triggers?rev={{revision}}
+    build.appstudio.openshift.io/repo: https://github.com/openshift-pipelines/tektoncd-triggers.git?rev={{revision}}
     build.appstudio.redhat.com/commit_sha: '{{revision}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
     pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch
-      == "next" &&
+      == "release-v1.17.x" &&
       ("upstream/***".pathChanged() || ".konflux/patches/***".pathChanged() || ".konflux/rpms/***".pathChanged() ||
       ".konflux/dockerfiles/core-interceptors.Dockerfile".pathChanged() ||
-      ".tekton/tektoncd-triggers-next-core-interceptors-push.yaml".pathChanged())
+      ".tekton/tektoncd-triggers-1-17-core-interceptors-push.yaml".pathChanged())
   creationTimestamp: null
   labels:
-    appstudio.openshift.io/application: tektoncd-triggers-next
-    appstudio.openshift.io/component: tektoncd-triggers-next-core-interceptors
+    appstudio.openshift.io/application: openshift-pipelines-1-17
+    appstudio.openshift.io/component: tektoncd-triggers-1-17-core-interceptors
     pipelines.appstudio.openshift.io/type: build
-  name: tektoncd-triggers-next-core-interceptors-on-push
+  name: tektoncd-triggers-1-17-core-interceptors-on-push
   namespace: tekton-ecosystem-tenant
 spec:
   params:
@@ -28,7 +28,7 @@ spec:
   - name: revision
     value: '{{revision}}'
   - name: output-image
-    value: quay.io/redhat-user-workloads/tekton-ecosystem-tenant/next/triggers-core-interceptors-rhel9:{{revision}}
+    value: quay.io/redhat-user-workloads/tekton-ecosystem-tenant/1-17/triggers-core-interceptors-rhel9:{{revision}}
   - name: dockerfile
     value: .konflux/dockerfiles/core-interceptors.Dockerfile
   - name: prefetch-input
