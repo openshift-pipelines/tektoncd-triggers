@@ -9,5 +9,3 @@ spec:
       value: $(body.changes[0].ref.displayId)
     - name: gitrepositoryurl
       value: $(body.repository.links.clone[0].href)
-    - name: contenttype
-      value: $(header.Content-Type)
