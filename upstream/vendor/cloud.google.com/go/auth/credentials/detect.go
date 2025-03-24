@@ -19,7 +19,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log/slog"
 	"net/http"
 	"os"
 	"time"
@@ -28,7 +27,6 @@ import (
 	"cloud.google.com/go/auth/internal"
 	"cloud.google.com/go/auth/internal/credsfile"
 	"cloud.google.com/go/compute/metadata"
-	"github.com/googleapis/gax-go/v2/internallog"
 )
 
 const (
@@ -38,9 +36,6 @@ const (
 	// Google's OAuth 2.0 default endpoints.
 	googleAuthURL  = "https://accounts.google.com/o/oauth2/auth"
 	googleTokenURL = "https://oauth2.googleapis.com/token"
-
-	// GoogleMTLSTokenURL is Google's default OAuth2.0 mTLS endpoint.
-	GoogleMTLSTokenURL = "https://oauth2.mtls.googleapis.com/token"
 
 	// Help on default credentials
 	adcSetupURL = "https://cloud.google.com/docs/authentication/external/set-up-adc"
@@ -78,18 +73,16 @@ func DetectDefault(opts *DetectOptions) (*auth.Credentials, error) {
 	if err := opts.validate(); err != nil {
 		return nil, err
 	}
-	if len(opts.CredentialsJSON) > 0 {
+	if opts.CredentialsJSON != nil {
 		return readCredentialsFileJSON(opts.CredentialsJSON, opts)
 	}
 	if opts.CredentialsFile != "" {
 		return readCredentialsFile(opts.CredentialsFile, opts)
 	}
 	if filename := os.Getenv(credsfile.GoogleAppCredsEnvVar); filename != "" {
-		creds, err := readCredentialsFile(filename, opts)
-		if err != nil {
-			return nil, err
+		if creds, err := readCredentialsFile(filename, opts); err == nil {
+			return creds, err
 		}
-		return creds, nil
 	}
 
 	fileName := credsfile.GetWellKnownFileName()
@@ -98,17 +91,12 @@ func DetectDefault(opts *DetectOptions) (*auth.Credentials, error) {
 	}
 
 	if OnGCE() {
-		metadataClient := metadata.NewWithOptions(&metadata.Options{
-			Logger: opts.logger(),
-		})
 		return auth.NewCredentials(&auth.CredentialsOptions{
-			TokenProvider: computeTokenProvider(opts, metadataClient),
-			ProjectIDProvider: auth.CredentialsPropertyFunc(func(ctx context.Context) (string, error) {
-				return metadataClient.ProjectIDWithContext(ctx)
+			TokenProvider: computeTokenProvider(opts.EarlyTokenRefresh, opts.Scopes...),
+			ProjectIDProvider: auth.CredentialsPropertyFunc(func(context.Context) (string, error) {
+				return metadata.ProjectID()
 			}),
-			UniverseDomainProvider: &internal.ComputeUniverseDomainProvider{
-				MetadataClient: metadataClient,
-			},
+			UniverseDomainProvider: &internal.ComputeUniverseDomainProvider{},
 		}), nil
 	}
 
@@ -128,13 +116,8 @@ type DetectOptions struct {
 	// Optional.
 	Subject string
 	// EarlyTokenRefresh configures how early before a token expires that it
-	// should be refreshed. Once the token’s time until expiration has entered
-	// this refresh window the token is considered valid but stale. If unset,
-	// the default value is 3 minutes and 45 seconds. Optional.
+	// should be refreshed.
 	EarlyTokenRefresh time.Duration
-	// DisableAsyncRefresh configures a synchronous workflow that refreshes
-	// stale tokens while blocking. The default is false. Optional.
-	DisableAsyncRefresh bool
 	// AuthHandlerOptions configures an authorization handler and other options
 	// for 3LO flows. It is required, and only used, for client credential
 	// flows.
@@ -165,11 +148,6 @@ type DetectOptions struct {
 	// The default value is "googleapis.com". This option is ignored for
 	// authentication flows that do not support universe domain. Optional.
 	UniverseDomain string
-	// Logger is used for debug logging. If provided, logging will be enabled
-	// at the loggers configured level. By default logging is disabled unless
-	// enabled by setting GOOGLE_SDK_GO_LOGGING_LEVEL in which case a default
-	// logger will be used. Optional.
-	Logger *slog.Logger
 }
 
 func (o *DetectOptions) validate() error {
@@ -202,11 +180,7 @@ func (o *DetectOptions) client() *http.Client {
 	if o.Client != nil {
 		return o.Client
 	}
-	return internal.DefaultClient()
-}
-
-func (o *DetectOptions) logger() *slog.Logger {
-	return internallog.New(o.Logger)
+	return internal.CloneDefaultClient()
 }
 
 func readCredentialsFile(filename string, opts *DetectOptions) (*auth.Credentials, error) {
@@ -269,7 +243,6 @@ func clientCredConfigFromJSON(b []byte, opts *DetectOptions) *auth.Options3LO {
 		AuthURL:          c.AuthURI,
 		TokenURL:         c.TokenURI,
 		Client:           opts.client(),
-		Logger:           opts.logger(),
 		EarlyTokenExpiry: opts.EarlyTokenRefresh,
 		AuthHandlerOpts:  handleOpts,
 		// TODO(codyoss): refactor this out. We need to add in auto-detection

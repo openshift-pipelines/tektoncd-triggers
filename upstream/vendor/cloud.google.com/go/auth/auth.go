@@ -12,11 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package auth provides utilities for managing Google Cloud credentials,
-// including functionality for creating, caching, and refreshing OAuth2 tokens.
-// It offers customizable options for different OAuth2 flows, such as 2-legged
-// (2LO) and 3-legged (3LO) OAuth, along with support for PKCE and automatic
-// token management.
 package auth
 
 import (
@@ -24,7 +19,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log/slog"
 	"net/http"
 	"net/url"
 	"strings"
@@ -33,7 +27,6 @@ import (
 
 	"cloud.google.com/go/auth/internal"
 	"cloud.google.com/go/auth/internal/jwt"
-	"github.com/googleapis/gax-go/v2/internallog"
 )
 
 const (
@@ -46,24 +39,9 @@ const (
 
 	// 3 minutes and 45 seconds before expiration. The shortest MDS cache is 4 minutes,
 	// so we give it 15 seconds to refresh it's cache before attempting to refresh a token.
-	defaultExpiryDelta = 225 * time.Second
+	defaultExpiryDelta = 215 * time.Second
 
 	universeDomainDefault = "googleapis.com"
-)
-
-// tokenState represents different states for a [Token].
-type tokenState int
-
-const (
-	// fresh indicates that the [Token] is valid. It is not expired or close to
-	// expired, or the token has no expiry.
-	fresh tokenState = iota
-	// stale indicates that the [Token] is close to expired, and should be
-	// refreshed. The token can be used normally.
-	stale
-	// invalid indicates that the [Token] is expired or invalid. The token
-	// cannot be used for a normal operation.
-	invalid
 )
 
 var (
@@ -103,27 +81,13 @@ type Token struct {
 
 // IsValid reports that a [Token] is non-nil, has a [Token.Value], and has not
 // expired. A token is considered expired if [Token.Expiry] has passed or will
-// pass in the next 225 seconds.
+// pass in the next 10 seconds.
 func (t *Token) IsValid() bool {
 	return t.isValidWithEarlyExpiry(defaultExpiryDelta)
 }
 
-// MetadataString is a convenience method for accessing string values in the
-// token's metadata. Returns an empty string if the metadata is nil or the value
-// for the given key cannot be cast to a string.
-func (t *Token) MetadataString(k string) string {
-	if t.Metadata == nil {
-		return ""
-	}
-	s, ok := t.Metadata[k].(string)
-	if !ok {
-		return ""
-	}
-	return s
-}
-
 func (t *Token) isValidWithEarlyExpiry(earlyExpiry time.Duration) bool {
-	if t.isEmpty() {
+	if t == nil || t.Value == "" {
 		return false
 	}
 	if t.Expiry.IsZero() {
@@ -132,14 +96,8 @@ func (t *Token) isValidWithEarlyExpiry(earlyExpiry time.Duration) bool {
 	return !t.Expiry.Round(0).Add(-earlyExpiry).Before(timeNow())
 }
 
-func (t *Token) isEmpty() bool {
-	return t == nil || t.Value == ""
-}
-
 // Credentials holds Google credentials, including
-// [Application Default Credentials].
-//
-// [Application Default Credentials]: https://developers.google.com/accounts/docs/application-default-credentials
+// [Application Default Credentials](https://developers.google.com/accounts/docs/application-default-credentials).
 type Credentials struct {
 	json           []byte
 	projectID      CredentialsPropertyProvider
@@ -229,7 +187,9 @@ type CredentialsOptions struct {
 	UniverseDomainProvider CredentialsPropertyProvider
 }
 
-// NewCredentials returns new [Credentials] from the provided options.
+// NewCredentials returns new [Credentials] from the provided options. Most users
+// will want to build this object a function from the
+// [cloud.google.com/go/auth/credentials] package.
 func NewCredentials(opts *CredentialsOptions) *Credentials {
 	creds := &Credentials{
 		TokenProvider:  opts.TokenProvider,
@@ -242,19 +202,15 @@ func NewCredentials(opts *CredentialsOptions) *Credentials {
 	return creds
 }
 
-// CachedTokenProviderOptions provides options for configuring a cached
-// [TokenProvider].
+// CachedTokenProviderOptions provided options for configuring a
+// CachedTokenProvider.
 type CachedTokenProviderOptions struct {
 	// DisableAutoRefresh makes the TokenProvider always return the same token,
-	// even if it is expired. The default is false. Optional.
+	// even if it is expired.
 	DisableAutoRefresh bool
 	// ExpireEarly configures the amount of time before a token expires, that it
-	// should be refreshed. If unset, the default value is 3 minutes and 45
-	// seconds. Optional.
+	// should be refreshed. If unset, the default value is 10 seconds.
 	ExpireEarly time.Duration
-	// DisableAsyncRefresh configures a synchronous workflow that refreshes
-	// tokens in a blocking manner. The default is false. Optional.
-	DisableAsyncRefresh bool
 }
 
 func (ctpo *CachedTokenProviderOptions) autoRefresh() bool {
@@ -265,130 +221,40 @@ func (ctpo *CachedTokenProviderOptions) autoRefresh() bool {
 }
 
 func (ctpo *CachedTokenProviderOptions) expireEarly() time.Duration {
-	if ctpo == nil || ctpo.ExpireEarly == 0 {
+	if ctpo == nil {
 		return defaultExpiryDelta
 	}
 	return ctpo.ExpireEarly
 }
 
-func (ctpo *CachedTokenProviderOptions) blockingRefresh() bool {
-	if ctpo == nil {
-		return false
-	}
-	return ctpo.DisableAsyncRefresh
-}
-
 // NewCachedTokenProvider wraps a [TokenProvider] to cache the tokens returned
-// by the underlying provider. By default it will refresh tokens asynchronously
-// a few minutes before they expire.
+// by the underlying provider. By default it will refresh tokens ten seconds
+// before they expire, but this time can be configured with the optional
+// options.
 func NewCachedTokenProvider(tp TokenProvider, opts *CachedTokenProviderOptions) TokenProvider {
 	if ctp, ok := tp.(*cachedTokenProvider); ok {
 		return ctp
 	}
 	return &cachedTokenProvider{
-		tp:              tp,
-		autoRefresh:     opts.autoRefresh(),
-		expireEarly:     opts.expireEarly(),
-		blockingRefresh: opts.blockingRefresh(),
+		tp:          tp,
+		autoRefresh: opts.autoRefresh(),
+		expireEarly: opts.expireEarly(),
 	}
 }
 
 type cachedTokenProvider struct {
-	tp              TokenProvider
-	autoRefresh     bool
-	expireEarly     time.Duration
-	blockingRefresh bool
+	tp          TokenProvider
+	autoRefresh bool
+	expireEarly time.Duration
 
 	mu          sync.Mutex
 	cachedToken *Token
-	// isRefreshRunning ensures that the non-blocking refresh will only be
-	// attempted once, even if multiple callers enter the Token method.
-	isRefreshRunning bool
-	// isRefreshErr ensures that the non-blocking refresh will only be attempted
-	// once per refresh window if an error is encountered.
-	isRefreshErr bool
 }
 
 func (c *cachedTokenProvider) Token(ctx context.Context) (*Token, error) {
-	if c.blockingRefresh {
-		return c.tokenBlocking(ctx)
-	}
-	return c.tokenNonBlocking(ctx)
-}
-
-func (c *cachedTokenProvider) tokenNonBlocking(ctx context.Context) (*Token, error) {
-	switch c.tokenState() {
-	case fresh:
-		c.mu.Lock()
-		defer c.mu.Unlock()
-		return c.cachedToken, nil
-	case stale:
-		// Call tokenAsync with a new Context because the user-provided context
-		// may have a short timeout incompatible with async token refresh.
-		c.tokenAsync(context.Background())
-		// Return the stale token immediately to not block customer requests to Cloud services.
-		c.mu.Lock()
-		defer c.mu.Unlock()
-		return c.cachedToken, nil
-	default: // invalid
-		return c.tokenBlocking(ctx)
-	}
-}
-
-// tokenState reports the token's validity.
-func (c *cachedTokenProvider) tokenState() tokenState {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	t := c.cachedToken
-	now := timeNow()
-	if t == nil || t.Value == "" {
-		return invalid
-	} else if t.Expiry.IsZero() {
-		return fresh
-	} else if now.After(t.Expiry.Round(0)) {
-		return invalid
-	} else if now.After(t.Expiry.Round(0).Add(-c.expireEarly)) {
-		return stale
-	}
-	return fresh
-}
-
-// tokenAsync uses a bool to ensure that only one non-blocking token refresh
-// happens at a time, even if multiple callers have entered this function
-// concurrently. This avoids creating an arbitrary number of concurrent
-// goroutines. Retries should be attempted and managed within the Token method.
-// If the refresh attempt fails, no further attempts are made until the refresh
-// window expires and the token enters the invalid state, at which point the
-// blocking call to Token should likely return the same error on the main goroutine.
-func (c *cachedTokenProvider) tokenAsync(ctx context.Context) {
-	fn := func() {
-		c.mu.Lock()
-		c.isRefreshRunning = true
-		c.mu.Unlock()
-		t, err := c.tp.Token(ctx)
-		c.mu.Lock()
-		defer c.mu.Unlock()
-		c.isRefreshRunning = false
-		if err != nil {
-			// Discard errors from the non-blocking refresh, but prevent further
-			// attempts.
-			c.isRefreshErr = true
-			return
-		}
-		c.cachedToken = t
-	}
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	if !c.isRefreshRunning && !c.isRefreshErr {
-		go fn()
-	}
-}
-
-func (c *cachedTokenProvider) tokenBlocking(ctx context.Context) (*Token, error) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	c.isRefreshErr = false
-	if c.cachedToken.IsValid() || (!c.autoRefresh && !c.cachedToken.isEmpty()) {
+	if c.cachedToken.IsValid() || !c.autoRefresh {
 		return c.cachedToken, nil
 	}
 	t, err := c.tp.Token(ctx)
@@ -492,18 +358,13 @@ type Options2LO struct {
 	// UseIDToken requests that the token returned be an ID token if one is
 	// returned from the server. Optional.
 	UseIDToken bool
-	// Logger is used for debug logging. If provided, logging will be enabled
-	// at the loggers configured level. By default logging is disabled unless
-	// enabled by setting GOOGLE_SDK_GO_LOGGING_LEVEL in which case a default
-	// logger will be used. Optional.
-	Logger *slog.Logger
 }
 
 func (o *Options2LO) client() *http.Client {
 	if o.Client != nil {
 		return o.Client
 	}
-	return internal.DefaultClient()
+	return internal.CloneDefaultClient()
 }
 
 func (o *Options2LO) validate() error {
@@ -527,13 +388,12 @@ func New2LOTokenProvider(opts *Options2LO) (TokenProvider, error) {
 	if err := opts.validate(); err != nil {
 		return nil, err
 	}
-	return tokenProvider2LO{opts: opts, Client: opts.client(), logger: internallog.New(opts.Logger)}, nil
+	return tokenProvider2LO{opts: opts, Client: opts.client()}, nil
 }
 
 type tokenProvider2LO struct {
 	opts   *Options2LO
 	Client *http.Client
-	logger *slog.Logger
 }
 
 func (tp tokenProvider2LO) Token(ctx context.Context) (*Token, error) {
@@ -563,17 +423,15 @@ func (tp tokenProvider2LO) Token(ctx context.Context) (*Token, error) {
 	v := url.Values{}
 	v.Set("grant_type", defaultGrantType)
 	v.Set("assertion", payload)
-	req, err := http.NewRequestWithContext(ctx, "POST", tp.opts.TokenURL, strings.NewReader(v.Encode()))
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	tp.logger.DebugContext(ctx, "2LO token request", "request", internallog.HTTPRequest(req, []byte(v.Encode())))
-	resp, body, err := internal.DoRequest(tp.Client, req)
+	resp, err := tp.Client.PostForm(tp.opts.TokenURL, v)
 	if err != nil {
 		return nil, fmt.Errorf("auth: cannot fetch token: %w", err)
 	}
-	tp.logger.DebugContext(ctx, "2LO token response", "response", internallog.HTTPResponse(resp, body))
+	defer resp.Body.Close()
+	body, err := internal.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("auth: cannot fetch token: %w", err)
+	}
 	if c := resp.StatusCode; c < http.StatusOK || c >= http.StatusMultipleChoices {
 		return nil, &Error{
 			Response: resp,
