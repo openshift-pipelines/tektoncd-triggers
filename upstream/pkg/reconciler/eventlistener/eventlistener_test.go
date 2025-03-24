@@ -281,10 +281,9 @@ func makeDeployment(ops ...func(d *appsv1.Deployment)) *appsv1.Deployment {
 								Drop: []corev1.Capability{"ALL"},
 							},
 							// 65532 is the distroless nonroot user ID
-							RunAsUser:              ptr.Int64(65532),
-							RunAsGroup:             ptr.Int64(65532),
-							RunAsNonRoot:           ptr.Bool(true),
-							ReadOnlyRootFilesystem: ptr.Bool(true),
+							RunAsUser:    ptr.Int64(65532),
+							RunAsGroup:   ptr.Int64(65532),
+							RunAsNonRoot: ptr.Bool(true),
 							SeccompProfile: &corev1.SeccompProfile{
 								Type: corev1.SeccompProfileTypeRuntimeDefault,
 							},
@@ -292,12 +291,6 @@ func makeDeployment(ops ...func(d *appsv1.Deployment)) *appsv1.Deployment {
 					}},
 					SecurityContext: &corev1.PodSecurityContext{
 						RunAsNonRoot: ptr.Bool(true),
-						RunAsUser:    ptr.Int64(65532),
-						RunAsGroup:   ptr.Int64(65532),
-						FSGroup:      ptr.Int64(65532),
-						SeccompProfile: &corev1.SeccompProfile{
-							Type: corev1.SeccompProfileTypeRuntimeDefault,
-						},
 					},
 				},
 			},
@@ -449,10 +442,9 @@ func makeWithPod(ops ...func(d *duckv1.WithPod)) *duckv1.WithPod {
 								Drop: []corev1.Capability{"ALL"},
 							},
 							// 65532 is the distroless nonroot user ID
-							RunAsUser:              ptr.Int64(65532),
-							RunAsGroup:             ptr.Int64(65532),
-							RunAsNonRoot:           ptr.Bool(true),
-							ReadOnlyRootFilesystem: ptr.Bool(true),
+							RunAsUser:    ptr.Int64(65532),
+							RunAsGroup:   ptr.Int64(65532),
+							RunAsNonRoot: ptr.Bool(true),
 							SeccompProfile: &corev1.SeccompProfile{
 								Type: corev1.SeccompProfileTypeRuntimeDefault,
 							},
@@ -599,14 +591,6 @@ func TestReconcile(t *testing.T) {
 
 	configWithSetSecurityContextFalse := resources.MakeConfig(func(c *resources.Config) {
 		c.SetSecurityContext = ptr.Bool(false)
-	})
-
-	configWithSetReadOnlyRootFilesystemFalse := resources.MakeConfig(func(c *resources.Config) {
-		c.SetReadOnlyRootFilesystem = ptr.Bool(false)
-	})
-
-	configWithSetSecurityContext := resources.MakeConfig(func(c *resources.Config) {
-		c.SetSecurityContext = ptr.Bool(true)
 	})
 
 	configWithSetEventListenerEventEnable := resources.MakeConfig(func(c *resources.Config) {
@@ -903,58 +887,9 @@ func TestReconcile(t *testing.T) {
 		d.Spec.Template.Spec.Containers[0].VolumeMounts = nil
 	})
 
-	deploymentMissingReadOnlyRootFilesystem := makeDeployment(func(d *appsv1.Deployment) {
-		d.Spec.Template.Spec.SecurityContext = &corev1.PodSecurityContext{
-			RunAsNonRoot: ptr.Bool(true),
-			RunAsUser:    ptr.Int64(65532),
-			RunAsGroup:   ptr.Int64(65532),
-			FSGroup:      ptr.Int64(65532),
-			SeccompProfile: &corev1.SeccompProfile{
-				Type: corev1.SeccompProfileTypeRuntimeDefault,
-			},
-		}
-		d.Spec.Template.Spec.Containers[0].SecurityContext = &corev1.SecurityContext{
-			AllowPrivilegeEscalation: ptr.Bool(false),
-			Capabilities: &corev1.Capabilities{
-				Drop: []corev1.Capability{"ALL"},
-			},
-			RunAsNonRoot: ptr.Bool(true),
-			RunAsUser:    ptr.Int64(65532),
-			RunAsGroup:   ptr.Int64(65532),
-			SeccompProfile: &corev1.SeccompProfile{
-				Type: corev1.SeccompProfileTypeRuntimeDefault,
-			},
-		}
-	})
-
 	deploymentMissingSecurityContext := makeDeployment(func(d *appsv1.Deployment) {
 		d.Spec.Template.Spec.SecurityContext = &corev1.PodSecurityContext{}
 		d.Spec.Template.Spec.Containers[0].SecurityContext = &corev1.SecurityContext{}
-	})
-
-	deploymentWithSecurityContext := makeDeployment(func(d *appsv1.Deployment) {
-		d.Spec.Template.Spec.SecurityContext = &corev1.PodSecurityContext{
-			RunAsNonRoot: ptr.Bool(true),
-			RunAsUser:    ptr.Int64(65532),
-			RunAsGroup:   ptr.Int64(65532),
-			FSGroup:      ptr.Int64(65532),
-			SeccompProfile: &corev1.SeccompProfile{
-				Type: corev1.SeccompProfileTypeRuntimeDefault,
-			},
-		}
-		d.Spec.Template.Spec.Containers[0].SecurityContext = &corev1.SecurityContext{
-			AllowPrivilegeEscalation: ptr.Bool(false),
-			Capabilities: &corev1.Capabilities{
-				Drop: []corev1.Capability{"ALL"},
-			},
-			RunAsNonRoot:           ptr.Bool(true),
-			ReadOnlyRootFilesystem: ptr.Bool(true),
-			RunAsUser:              ptr.Int64(65532),
-			RunAsGroup:             ptr.Int64(65532),
-			SeccompProfile: &corev1.SeccompProfile{
-				Type: corev1.SeccompProfileTypeRuntimeDefault,
-			},
-		}
 	})
 
 	deploymentEventListenerEvent := makeDeployment(func(d *appsv1.Deployment) {
@@ -1397,33 +1332,17 @@ func TestReconcile(t *testing.T) {
 			Services:       []*corev1.Service{elServiceWithTLSConnection},
 		},
 	}, {
-		name:   "eventlistener with security context",
-		key:    reconcileKey,
-		config: configWithSetSecurityContext,
+		name: "eventlistener with security context",
+		key:  reconcileKey,
 		startResources: test.Resources{
 			Namespaces:     []*corev1.Namespace{namespaceResource},
 			EventListeners: []*v1beta1.EventListener{elWithStatus},
-			Deployments:    []*appsv1.Deployment{deploymentWithSecurityContext},
+			Deployments:    []*appsv1.Deployment{deploymentMissingSecurityContext},
 		},
 		endResources: test.Resources{
 			Namespaces:     []*corev1.Namespace{namespaceResource},
 			EventListeners: []*v1beta1.EventListener{elWithStatus},
 			Deployments:    []*appsv1.Deployment{elDeployment},
-			Services:       []*corev1.Service{elService},
-		},
-	}, {
-		name:   "eventlistener with SetReadOnlyRootFilesystem false",
-		key:    reconcileKey,
-		config: configWithSetReadOnlyRootFilesystemFalse,
-		startResources: test.Resources{
-			Namespaces:     []*corev1.Namespace{namespaceResource},
-			EventListeners: []*v1beta1.EventListener{elWithStatus},
-			Deployments:    []*appsv1.Deployment{elDeployment},
-		},
-		endResources: test.Resources{
-			Namespaces:     []*corev1.Namespace{namespaceResource},
-			EventListeners: []*v1beta1.EventListener{elWithStatus},
-			Deployments:    []*appsv1.Deployment{deploymentMissingReadOnlyRootFilesystem}, // ReadOnlyRootFilesystem is not set for container
 			Services:       []*corev1.Service{elService},
 		},
 	}, {

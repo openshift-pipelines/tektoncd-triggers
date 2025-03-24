@@ -3981,6 +3981,8 @@ string
 </em>
 </td>
 <td>
+<em>(Optional)</em>
+<p>Define the .spec.loadBalancerClass for Service with the type LoadBalancer.</p>
 </td>
 </tr>
 <tr>
