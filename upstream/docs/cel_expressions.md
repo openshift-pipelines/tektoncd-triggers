@@ -59,11 +59,8 @@ You can either explicitly convert the number, or add another double value e.g.
 
 ```yaml
 interceptors:
-  - ref:
-      name: cel
-      params:
-      - name: overlays
-        value:
+  - cel:
+      overlays:
         - key: count_plus_1
           expression: "body.count + 1.0"
         - key: count_plus_2
@@ -88,13 +85,10 @@ The following example will generate an error with the JSON example.
 
 ```yaml
 interceptors:
-  - ref:
-      name: cel
-      params:
-      - name: overlays
-        value:
-          - key: bad_measure_times_3
-            expression: "body.measure * 3"
+  - cel:
+      overlays:
+        - key: bad_measure_times_3
+          expression: "body.measure * 3"
 ```
 
 **bad_measure_times_3** will fail with
@@ -133,17 +127,15 @@ You can use this in filters in the following ways:
 
 You can also parse additional data from each of the labels:
 ```yaml
-- name: overlays
-  value:
-  - key: suffixes
-    expression: "body.labels.map(x, x.name.substring(x.name.lastIndexOf('-')+1))"
+overlays:
+- key: suffixes
+  expression: "body.labels.map(x, x.name.substring(x.name.lastIndexOf('-')+1))"
 ```
 This yields an array of `["a", "b"]` in the `suffixes` extension key.
 ```yaml
-- name: overlays
-  value:
-  - key: filtered
-    expression: "body.labels.filter(x, x.name.endsWith('-b'))"
+overlays:
+- key: filtered
+  expression: "body.labels.filter(x, x.name.endsWith('-b'))"
 ```
 This would add an extensions key `filtered` with only one of the labels.
 ```yaml
@@ -158,14 +150,6 @@ This would add an extensions key `filtered` with only one of the labels.
 
 All the functionality from the cel-go project's [CEL extension](https://github.com/google/cel-go/tree/master/ext) is available in
 your CEL expressions.
-
-The following extensions are available:
-
- * [Strings](https://pkg.go.dev/github.com/google/cel-go@v0.20.1/ext#Strings).
- * [Encoders](https://pkg.go.dev/github.com/google/cel-go@v0.20.1/ext#Encoders)
- * [Sets](https://pkg.go.dev/github.com/google/cel-go@v0.20.1/ext#Sets)
- * [Lists](https://pkg.go.dev/github.com/google/cel-go@v0.20.1/ext#Lists)
- * [Math](https://pkg.go.dev/github.com/google/cel-go@v0.20.1/ext#Math)
 
 ### cel-go Bytes
 
@@ -186,11 +170,8 @@ you will need to explicitly convert it to a CEL string.
 
 ```yaml
 interceptors:
-  - ref:
-      name: "cel"
-    params:
-      - name: "overlays"
-        value:
+  - cel:
+      overlays:
         - key: base64_decoded
           expression: "string(base64.decode(body.b64Value))"
 ```
@@ -346,7 +327,7 @@ interceptor.
   </tr>
   <tr>
     <th>
-      decodeb64 <b>deprecated: please use base64.decode</b>
+      decodeb64 **deprecated: please use base64.decode**
     </th>
     <td>
       <pre>&lt;string&gt;.decodeb64() -> string</pre>
@@ -502,36 +483,6 @@ which can be accessed by indexing.
     <td>
      <pre>"This is $an Invalid5String ".translate("[^a-z0-9]+", "") == "hisisannvalid5tring"</pre><br />
      <pre>"This is $an Invalid5String ".translate("[^a-z0-9]+", "ABC") == "ABChisABCisABCanABCnvalid5ABCtring"</pre>
-    </td>
-  </tr>
-  <tr>
-    <th>
-     lowerAscii()
-    </th>
-    <td>
-     <pre>&lt;string&gt;.lowerAscii() -> &lt;string&gt;</pre>
-    </td>
-    <td>
-     Returns a new string where all ASCII characters are lower-cased.
-    </td>
-    <td>
-     <pre>"TacoCat".lowerAscii() == "tacocat"</pre><br />
-     <pre>"TacoCÆt Xii".lowerAscii() == "tacocÆt xii"</pre>
-    </td>
-  </tr>
-  <tr>
-    <th>
-     upperAscii()
-    </th>
-    <td>
-     <pre>&lt;string&gt;.upperAscii() -> &lt;string&gt;</pre>
-    </td>
-    <td>
-     Returns a new string where all ASCII characters are upper-cased.
-    </td>
-    <td>
-     <pre>"TacoCat".upperAscii() == "TACOCAT"</pre><br />
-     <pre>"TacoCÆt Xii".upperAscii() == "TACOCÆT XII"</pre>
     </td>
   </tr>
 </table>

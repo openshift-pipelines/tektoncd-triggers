@@ -149,10 +149,6 @@ func validateKubernetesObject(orig *KubernetesResource) (errs *apis.FieldError) 
 		errs = errs.Also(validateEnv(orig.Template.Spec.Containers[0].Env).ViaField("spec.template.spec.containers[0].env"))
 	}
 
-	if orig.ServiceLoadBalancerClass != nil && orig.ServiceType != corev1.ServiceTypeLoadBalancer {
-		errs = errs.Also(apis.ErrInvalidValue(*orig.ServiceLoadBalancerClass, "serviceLoadBalancerClass", "ServiceLoadBalancerClass is only needed for LoadBalancer service type"))
-	}
-
 	return errs
 }
 
@@ -277,12 +273,12 @@ func podSpecMask(in *corev1.PodSpec) *corev1.PodSpec {
 	out.NodeSelector = in.NodeSelector
 	out.Affinity = in.Affinity
 	out.TopologySpreadConstraints = in.TopologySpreadConstraints
-	out.ImagePullSecrets = in.ImagePullSecrets
 
 	// Disallowed fields
 	// This list clarifies which all podspec fields are not allowed.
 	out.Volumes = nil
 	out.EnableServiceLinks = nil
+	out.ImagePullSecrets = nil
 	out.InitContainers = nil
 	out.RestartPolicy = ""
 	out.TerminationGracePeriodSeconds = nil

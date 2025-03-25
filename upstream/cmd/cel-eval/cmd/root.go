@@ -43,7 +43,7 @@ func init() {
 // revive:disable:unused-parameter
 
 func rootRun(cmd *cobra.Command, args []string) {
-	if err := evalCEL(cmd.Context(), os.Stdout, expressionPath, httpPath); err != nil {
+	if err := evalCEL(os.Stdout, expressionPath, httpPath); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -54,7 +54,7 @@ func (sg secretGetter) Get(ctx context.Context, triggerNS string, sr *triggersv1
 	return nil, nil
 }
 
-func evalCEL(ctx context.Context, w io.Writer, expressionPath, httpPath string) error {
+func evalCEL(w io.Writer, expressionPath, httpPath string) error {
 	// Read expression
 	expression, err := readExpression(expressionPath)
 	if err != nil {
@@ -74,12 +74,9 @@ func evalCEL(ctx context.Context, w io.Writer, expressionPath, httpPath string) 
 
 	mapStrDyn := decls.NewMapType(decls.String, decls.Dyn)
 	env, err := cel.NewEnv(
-		triggerscel.Triggers(ctx, "default", secretGetter{}),
+		triggerscel.Triggers(context.Background(), "default", secretGetter{}),
 		celext.Strings(),
 		celext.Encoders(),
-		celext.Sets(),
-		celext.Lists(),
-		celext.Math(),
 		cel.Declarations(
 			decls.NewVar("body", mapStrDyn),
 			decls.NewVar("header", mapStrDyn),
