@@ -149,8 +149,8 @@ func (s *sinker) getCertFromInterceptor(certPool *x509.CertPool) error {
 		count      int
 		httpsCILen int
 	)
-	ctx := context.Background()
-	if err := wait.PollUntilContextTimeout(ctx, interval, timeout, true, func(_ context.Context) (bool, error) {
+
+	if err := wait.PollImmediate(interval, timeout, func() (bool, error) {
 		clusterInterceptorList, err := clusterinterceptorsinformer.Get(s.injCtx).Lister().List(labels.NewSelector())
 		if err != nil {
 			return false, err
@@ -210,13 +210,10 @@ func (s *sinker) Start(ctx context.Context) error {
 		return err
 	}
 	// Create EventListener Sink
-
-	dynamicClient := dynamicclient.Get(ctx)
-
 	r := sink.Sink{
 		KubeClientSet:          kubeclient.Get(ctx),
 		DiscoveryClient:        s.Clients.DiscoveryClient,
-		DynamicClient:          dynamicClient,
+		DynamicClient:          dynamicclient.Get(ctx),
 		TriggersClient:         s.Clients.TriggersClient,
 		HTTPClient:             clientObj,
 		CEClient:               s.Clients.CEClient,
@@ -248,7 +245,7 @@ func (s *sinker) Start(ctx context.Context) error {
 
 	// For handling Liveness Probe
 	// TODO(dibyom): Livness, metrics etc. should be on a separate port
-	mux.HandleFunc("/live", func(w http.ResponseWriter, _ *http.Request) {
+	mux.HandleFunc("/live", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
 		fmt.Fprint(w, "ok")
 	})
@@ -276,7 +273,7 @@ func (s *sinker) Start(ctx context.Context) error {
 }
 
 func New(sinkArgs sink.Args, sinkClients sink.Clients, recorder *sink.Recorder) adapter.AdapterConstructor {
-	return func(ctx context.Context, processed adapter.EnvConfigAccessor, _ cloudevents.Client) adapter.Adapter {
+	return func(ctx context.Context, processed adapter.EnvConfigAccessor, ceClient cloudevents.Client) adapter.Adapter {
 		env := processed.(*envConfig)
 		logger := logging.FromContext(ctx)
 

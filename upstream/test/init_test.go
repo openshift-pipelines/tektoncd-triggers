@@ -149,8 +149,7 @@ func verifyDefaultServiceAccountExists(t *testing.T, namespace string, kubeClien
 	defaultSA := "default"
 	t.Logf("Verify SA %s is created in namespace %s", defaultSA, namespace)
 
-	ctx := context.Background()
-	if err := wait.PollUntilContextTimeout(ctx, interval, timeout, true, func(_ context.Context) (bool, error) {
+	if err := wait.PollImmediate(interval, timeout, func() (bool, error) {
 		_, err := kubeClient.CoreV1().ServiceAccounts(namespace).Get(context.Background(), defaultSA, metav1.GetOptions{})
 		if err != nil && errors.IsNotFound(err) {
 			return false, nil
@@ -163,7 +162,7 @@ func verifyDefaultServiceAccountExists(t *testing.T, namespace string, kubeClien
 
 func getCRDYaml(cs *clients, ns string) ([]byte, error) {
 	var output []byte
-	printOrAdd := func(_, _ string, i interface{}) {
+	printOrAdd := func(kind, name string, i interface{}) {
 		bs, err := json.Marshal(i)
 		if err != nil {
 			return
