@@ -62,8 +62,7 @@ interceptors:
   - ref:
       name: cel
       params:
-      - name: overlays
-        value:
+      - name: overlays:
         - key: count_plus_1
           expression: "body.count + 1.0"
         - key: count_plus_2
@@ -91,8 +90,8 @@ interceptors:
   - ref:
       name: cel
       params:
-      - name: overlays
-        value:
+      - name: overlays:
+        values:
           - key: bad_measure_times_3
             expression: "body.measure * 3"
 ```
@@ -133,17 +132,15 @@ You can use this in filters in the following ways:
 
 You can also parse additional data from each of the labels:
 ```yaml
-- name: overlays
-  value:
-  - key: suffixes
-    expression: "body.labels.map(x, x.name.substring(x.name.lastIndexOf('-')+1))"
+overlays:
+- key: suffixes
+  expression: "body.labels.map(x, x.name.substring(x.name.lastIndexOf('-')+1))"
 ```
 This yields an array of `["a", "b"]` in the `suffixes` extension key.
 ```yaml
-- name: overlays
-  value:
-  - key: filtered
-    expression: "body.labels.filter(x, x.name.endsWith('-b'))"
+overlays:
+- key: filtered
+  expression: "body.labels.filter(x, x.name.endsWith('-b'))"
 ```
 This would add an extensions key `filtered` with only one of the labels.
 ```yaml
@@ -186,11 +183,8 @@ you will need to explicitly convert it to a CEL string.
 
 ```yaml
 interceptors:
-  - ref:
-      name: "cel"
-    params:
-      - name: "overlays"
-        value:
+  - cel:
+      overlays:
         - key: base64_decoded
           expression: "string(base64.decode(body.b64Value))"
 ```
@@ -346,7 +340,7 @@ interceptor.
   </tr>
   <tr>
     <th>
-      decodeb64 <b>deprecated: please use base64.decode</b>
+      decodeb64 **deprecated: please use base64.decode**
     </th>
     <td>
       <pre>&lt;string&gt;.decodeb64() -> string</pre>
