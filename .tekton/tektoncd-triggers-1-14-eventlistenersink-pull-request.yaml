@@ -17,7 +17,7 @@ metadata:
       ".tekton/tektoncd-triggers-1-14-eventlistenersink-pull-request.yaml".pathChanged())
   creationTimestamp: null
   labels:
-    appstudio.openshift.io/application: openshift-pipelines-1-14
+    appstudio.openshift.io/application: openshift-pipelines-core-1-14
     appstudio.openshift.io/component: tektoncd-triggers-1-14-eventlistenersink
     pipelines.appstudio.openshift.io/type: build
   name: tektoncd-triggers-1-14-eventlistenersink-on-pull-request
