@@ -16,7 +16,7 @@ metadata:
       ".tekton/tektoncd-triggers-1-15-webhook-push.yaml".pathChanged())
   creationTimestamp: null
   labels:
-    appstudio.openshift.io/application: openshift-pipelines-1-15
+    appstudio.openshift.io/application: openshift-pipelines-core-1-15
     appstudio.openshift.io/component: tektoncd-triggers-1-15-webhook
     pipelines.appstudio.openshift.io/type: build
   name: tektoncd-triggers-1-15-webhook-on-push
