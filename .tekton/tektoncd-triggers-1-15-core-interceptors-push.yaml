@@ -30,7 +30,7 @@ spec:
   - name: output-image
     value: quay.io/redhat-user-workloads/tekton-ecosystem-tenant/1-15/triggers-core-interceptors-rhel8:{{revision}}
   - name: dockerfile
-    value: .konflux/dockerfiles/core-interceptors.Dockerfile
+    value: .konflux/dockerfiles/core-interceptors.Dockerfile    
   - name: prefetch-input
     value: |
       {"type": "rpm", "path": ".konflux/rpms"}
