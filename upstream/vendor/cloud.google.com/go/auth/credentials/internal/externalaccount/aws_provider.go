@@ -23,7 +23,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log/slog"
 	"net/http"
 	"net/url"
 	"os"
@@ -33,7 +32,6 @@ import (
 	"time"
 
 	"cloud.google.com/go/auth/internal"
-	"github.com/googleapis/gax-go/v2/internallog"
 )
 
 var (
@@ -89,7 +87,6 @@ type awsSubjectProvider struct {
 	reqOpts                     *RequestOptions
 
 	Client *http.Client
-	logger *slog.Logger
 }
 
 func (sp *awsSubjectProvider) subjectToken(ctx context.Context) (string, error) {
@@ -97,33 +94,35 @@ func (sp *awsSubjectProvider) subjectToken(ctx context.Context) (string, error) 
 	if sp.RegionalCredVerificationURL == "" {
 		sp.RegionalCredVerificationURL = defaultRegionalCredentialVerificationURL
 	}
-	headers := make(map[string]string)
-	if sp.shouldUseMetadataServer() {
-		awsSessionToken, err := sp.getAWSSessionToken(ctx)
+	if sp.requestSigner == nil {
+		headers := make(map[string]string)
+		if sp.shouldUseMetadataServer() {
+			awsSessionToken, err := sp.getAWSSessionToken(ctx)
+			if err != nil {
+				return "", err
+			}
+
+			if awsSessionToken != "" {
+				headers[awsIMDSv2SessionTokenHeader] = awsSessionToken
+			}
+		}
+
+		awsSecurityCredentials, err := sp.getSecurityCredentials(ctx, headers)
 		if err != nil {
 			return "", err
 		}
-
-		if awsSessionToken != "" {
-			headers[awsIMDSv2SessionTokenHeader] = awsSessionToken
+		if sp.region, err = sp.getRegion(ctx, headers); err != nil {
+			return "", err
 		}
-	}
-
-	awsSecurityCredentials, err := sp.getSecurityCredentials(ctx, headers)
-	if err != nil {
-		return "", err
-	}
-	if sp.region, err = sp.getRegion(ctx, headers); err != nil {
-		return "", err
-	}
-	sp.requestSigner = &awsRequestSigner{
-		RegionName:             sp.region,
-		AwsSecurityCredentials: awsSecurityCredentials,
+		sp.requestSigner = &awsRequestSigner{
+			RegionName:             sp.region,
+			AwsSecurityCredentials: awsSecurityCredentials,
+		}
 	}
 
 	// Generate the signed request to AWS STS GetCallerIdentity API.
 	// Use the required regional endpoint. Otherwise, the request will fail.
-	req, err := http.NewRequestWithContext(ctx, "POST", strings.Replace(sp.RegionalCredVerificationURL, "{region}", sp.region, 1), nil)
+	req, err := http.NewRequest("POST", strings.Replace(sp.RegionalCredVerificationURL, "{region}", sp.region, 1), nil)
 	if err != nil {
 		return "", err
 	}
@@ -195,16 +194,20 @@ func (sp *awsSubjectProvider) getAWSSessionToken(ctx context.Context) (string, e
 	}
 	req.Header.Set(awsIMDSv2SessionTTLHeader, awsIMDSv2SessionTTL)
 
-	sp.logger.DebugContext(ctx, "aws session token request", "request", internallog.HTTPRequest(req, nil))
-	resp, body, err := internal.DoRequest(sp.Client, req)
+	resp, err := sp.Client.Do(req)
 	if err != nil {
 		return "", err
 	}
-	sp.logger.DebugContext(ctx, "aws session token response", "response", internallog.HTTPResponse(resp, body))
-	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("credentials: unable to retrieve AWS session token: %s", body)
+	defer resp.Body.Close()
+
+	respBody, err := internal.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
 	}
-	return string(body), nil
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("credentials: unable to retrieve AWS session token: %s", respBody)
+	}
+	return string(respBody), nil
 }
 
 func (sp *awsSubjectProvider) getRegion(ctx context.Context, headers map[string]string) (string, error) {
@@ -230,23 +233,29 @@ func (sp *awsSubjectProvider) getRegion(ctx context.Context, headers map[string]
 	for name, value := range headers {
 		req.Header.Add(name, value)
 	}
-	sp.logger.DebugContext(ctx, "aws region request", "request", internallog.HTTPRequest(req, nil))
-	resp, body, err := internal.DoRequest(sp.Client, req)
+
+	resp, err := sp.Client.Do(req)
 	if err != nil {
 		return "", err
 	}
-	sp.logger.DebugContext(ctx, "aws region response", "response", internallog.HTTPResponse(resp, body))
+	defer resp.Body.Close()
+
+	respBody, err := internal.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
 	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("credentials: unable to retrieve AWS region - %s", body)
+		return "", fmt.Errorf("credentials: unable to retrieve AWS region - %s", respBody)
 	}
 
 	// This endpoint will return the region in format: us-east-2b.
 	// Only the us-east-2 part should be used.
-	bodyLen := len(body)
+	bodyLen := len(respBody)
 	if bodyLen == 0 {
 		return "", nil
 	}
-	return string(body[:bodyLen-1]), nil
+	return string(respBody[:bodyLen-1]), nil
 }
 
 func (sp *awsSubjectProvider) getSecurityCredentials(ctx context.Context, headers map[string]string) (result *AwsSecurityCredentials, err error) {
@@ -290,19 +299,22 @@ func (sp *awsSubjectProvider) getMetadataSecurityCredentials(ctx context.Context
 	for name, value := range headers {
 		req.Header.Add(name, value)
 	}
-	sp.logger.DebugContext(ctx, "aws security credential request", "request", internallog.HTTPRequest(req, nil))
-	resp, body, err := internal.DoRequest(sp.Client, req)
+
+	resp, err := sp.Client.Do(req)
 	if err != nil {
 		return result, err
 	}
-	sp.logger.DebugContext(ctx, "aws security credential response", "response", internallog.HTTPResponse(resp, body))
+	defer resp.Body.Close()
+
+	respBody, err := internal.ReadAll(resp.Body)
+	if err != nil {
+		return result, err
+	}
 	if resp.StatusCode != http.StatusOK {
-		return result, fmt.Errorf("credentials: unable to retrieve AWS security credentials - %s", body)
+		return result, fmt.Errorf("credentials: unable to retrieve AWS security credentials - %s", respBody)
 	}
-	if err := json.Unmarshal(body, &result); err != nil {
-		return nil, err
-	}
-	return result, nil
+	err = json.Unmarshal(respBody, &result)
+	return result, err
 }
 
 func (sp *awsSubjectProvider) getMetadataRoleName(ctx context.Context, headers map[string]string) (string, error) {
@@ -317,16 +329,20 @@ func (sp *awsSubjectProvider) getMetadataRoleName(ctx context.Context, headers m
 		req.Header.Add(name, value)
 	}
 
-	sp.logger.DebugContext(ctx, "aws metadata role request", "request", internallog.HTTPRequest(req, nil))
-	resp, body, err := internal.DoRequest(sp.Client, req)
+	resp, err := sp.Client.Do(req)
 	if err != nil {
 		return "", err
 	}
-	sp.logger.DebugContext(ctx, "aws metadata role response", "response", internallog.HTTPResponse(resp, body))
-	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("credentials: unable to retrieve AWS role name - %s", body)
+	defer resp.Body.Close()
+
+	respBody, err := internal.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
 	}
-	return string(body), nil
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("credentials: unable to retrieve AWS role name - %s", respBody)
+	}
+	return string(respBody), nil
 }
 
 // awsRequestSigner is a utility class to sign http requests using a AWS V4 signature.
