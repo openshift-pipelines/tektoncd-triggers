@@ -22,6 +22,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	cfg "github.com/tektoncd/triggers/pkg/apis/config"
 	"github.com/tektoncd/triggers/pkg/apis/triggers/v1beta1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -154,10 +155,11 @@ func TestCustomObject(t *testing.T) {
 										"allowPrivilegeEscalation": false,
 										"capabilities": map[string]interface{}{
 											"drop": []interface{}{string("ALL")}},
-										"runAsGroup":     int64(65532),
-										"runAsNonRoot":   bool(true),
-										"runAsUser":      int64(65532),
-										"seccompProfile": map[string]interface{}{"type": string("RuntimeDefault")},
+										"runAsGroup":             int64(65532),
+										"runAsNonRoot":           bool(true),
+										"readOnlyRootFilesystem": bool(true),
+										"runAsUser":              int64(65532),
+										"seccompProfile":         map[string]interface{}{"type": string("RuntimeDefault")},
 									},
 									"resources": map[string]interface{}{},
 									"readinessProbe": map[string]interface{}{
@@ -230,10 +232,11 @@ func TestCustomObject(t *testing.T) {
 										"allowPrivilegeEscalation": false,
 										"capabilities": map[string]interface{}{
 											"drop": []interface{}{string("ALL")}},
-										"runAsGroup":     int64(65532),
-										"runAsNonRoot":   bool(true),
-										"runAsUser":      int64(65532),
-										"seccompProfile": map[string]interface{}{"type": string("RuntimeDefault")},
+										"runAsGroup":             int64(65532),
+										"runAsNonRoot":           bool(true),
+										"readOnlyRootFilesystem": bool(true),
+										"runAsUser":              int64(65532),
+										"seccompProfile":         map[string]interface{}{"type": string("RuntimeDefault")},
 									},
 									"resources": map[string]interface{}{},
 									"readinessProbe": map[string]interface{}{
@@ -307,10 +310,11 @@ func TestCustomObject(t *testing.T) {
 										"allowPrivilegeEscalation": false,
 										"capabilities": map[string]interface{}{
 											"drop": []interface{}{string("ALL")}},
-										"runAsGroup":     int64(65532),
-										"runAsNonRoot":   bool(true),
-										"runAsUser":      int64(65532),
-										"seccompProfile": map[string]interface{}{"type": string("RuntimeDefault")},
+										"runAsGroup":             int64(65532),
+										"runAsNonRoot":           bool(true),
+										"readOnlyRootFilesystem": bool(true),
+										"runAsUser":              int64(65532),
+										"seccompProfile":         map[string]interface{}{"type": string("RuntimeDefault")},
 									},
 									"readinessProbe": map[string]interface{}{
 										"httpGet": map[string]interface{}{
@@ -424,10 +428,11 @@ func TestCustomObject(t *testing.T) {
 										"allowPrivilegeEscalation": false,
 										"capabilities": map[string]interface{}{
 											"drop": []interface{}{string("ALL")}},
-										"runAsGroup":     int64(65532),
-										"runAsNonRoot":   bool(true),
-										"runAsUser":      int64(65532),
-										"seccompProfile": map[string]interface{}{"type": string("RuntimeDefault")},
+										"runAsGroup":             int64(65532),
+										"runAsNonRoot":           bool(true),
+										"readOnlyRootFilesystem": bool(true),
+										"runAsUser":              int64(65532),
+										"seccompProfile":         map[string]interface{}{"type": string("RuntimeDefault")},
 									},
 									"readinessProbe": map[string]interface{}{
 										"httpGet": map[string]interface{}{
@@ -448,7 +453,8 @@ func TestCustomObject(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := MakeCustomObject(context.Background(), tt.el, &reconcilersource.EmptyVarsGenerator{}, config)
+			got, err := MakeCustomObject(context.Background(), tt.el, &reconcilersource.EmptyVarsGenerator{}, config,
+				cfg.FromContextOrDefaults(context.Background()))
 			if err != nil {
 				t.Fatalf("MakeCustomObject() = %v", err)
 			}
@@ -471,7 +477,7 @@ func TestCustomObjectError(t *testing.T) {
 				Raw: []byte(`garbage`),
 			},
 		}
-	}), &reconcilersource.EmptyVarsGenerator{}, config)
+	}), &reconcilersource.EmptyVarsGenerator{}, config, cfg.FromContextOrDefaults(context.Background()))
 	if err == nil {
 		t.Fatalf("MakeCustomObject() = %v, wanted error", got)
 	}
