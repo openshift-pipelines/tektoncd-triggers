@@ -232,7 +232,6 @@ func containerFieldMaskForKubernetes(in *corev1.Container) *corev1.Container {
 	out.LivenessProbe = in.LivenessProbe
 	out.ReadinessProbe = in.ReadinessProbe
 	out.StartupProbe = in.StartupProbe
-	out.SecurityContext = in.SecurityContext
 	return containerFieldMask(out)
 }
 
@@ -240,7 +239,6 @@ func containerFieldMaskForCustomResource(in *corev1.Container) *corev1.Container
 	out := new(corev1.Container)
 	out.Resources = in.Resources
 	out.Env = in.Env
-	out.SecurityContext = in.SecurityContext
 	return containerFieldMask(out)
 }
 
@@ -280,7 +278,6 @@ func podSpecMask(in *corev1.PodSpec) *corev1.PodSpec {
 	out.Affinity = in.Affinity
 	out.TopologySpreadConstraints = in.TopologySpreadConstraints
 	out.ImagePullSecrets = in.ImagePullSecrets
-	out.SecurityContext = in.SecurityContext
 
 	// Disallowed fields
 	// This list clarifies which all podspec fields are not allowed.
@@ -297,6 +294,7 @@ func podSpecMask(in *corev1.PodSpec) *corev1.PodSpec {
 	out.HostPID = false
 	out.HostIPC = false
 	out.ShareProcessNamespace = nil
+	out.SecurityContext = nil
 	out.Hostname = ""
 	out.Subdomain = ""
 	out.SchedulerName = ""

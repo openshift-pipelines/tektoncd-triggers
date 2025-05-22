@@ -73,7 +73,7 @@ type dialOptions struct {
 	chainUnaryInts  []UnaryClientInterceptor
 	chainStreamInts []StreamClientInterceptor
 
-	compressorV0                Compressor
+	cp                          Compressor
 	dc                          Decompressor
 	bs                          internalbackoff.Strategy
 	block                       bool
@@ -94,8 +94,6 @@ type dialOptions struct {
 	idleTimeout                 time.Duration
 	defaultScheme               string
 	maxCallAttempts             int
-	enableLocalDNSResolution    bool // Specifies if target hostnames should be resolved when proxying is enabled.
-	useProxy                    bool // Specifies if a server should be connected via proxy.
 }
 
 // DialOption configures how we set up the connection.
@@ -258,7 +256,7 @@ func WithCodec(c Codec) DialOption {
 // Deprecated: use UseCompressor instead.  Will be supported throughout 1.x.
 func WithCompressor(cp Compressor) DialOption {
 	return newFuncDialOption(func(o *dialOptions) {
-		o.compressorV0 = cp
+		o.cp = cp
 	})
 }
 
@@ -379,22 +377,7 @@ func WithInsecure() DialOption {
 // later release.
 func WithNoProxy() DialOption {
 	return newFuncDialOption(func(o *dialOptions) {
-		o.useProxy = false
-	})
-}
-
-// WithLocalDNSResolution forces local DNS name resolution even when a proxy is
-// specified in the environment.  By default, the server name is provided
-// directly to the proxy as part of the CONNECT handshake. This is ignored if
-// WithNoProxy is used.
-//
-// # Experimental
-//
-// Notice: This API is EXPERIMENTAL and may be changed or removed in a
-// later release.
-func WithLocalDNSResolution() DialOption {
-	return newFuncDialOption(func(o *dialOptions) {
-		o.enableLocalDNSResolution = true
+		o.copts.UseProxy = false
 	})
 }
 
@@ -684,15 +667,14 @@ func defaultDialOptions() dialOptions {
 		copts: transport.ConnectOptions{
 			ReadBufferSize:  defaultReadBufSize,
 			WriteBufferSize: defaultWriteBufSize,
+			UseProxy:        true,
 			UserAgent:       grpcUA,
 			BufferPool:      mem.DefaultBufferPool(),
 		},
-		bs:                       internalbackoff.DefaultExponential,
-		idleTimeout:              30 * time.Minute,
-		defaultScheme:            "dns",
-		maxCallAttempts:          defaultMaxCallAttempts,
-		useProxy:                 true,
-		enableLocalDNSResolution: false,
+		bs:              internalbackoff.DefaultExponential,
+		idleTimeout:     30 * time.Minute,
+		defaultScheme:   "dns",
+		maxCallAttempts: defaultMaxCallAttempts,
 	}
 }
 

@@ -52,7 +52,7 @@
       "type": "object",
       "properties": {
         "affinity": {
-          "description": "If specified, the pod's scheduling constraints. See Pod.spec.affinity (API version: v1)",
+          "description": "If specified, the pod's scheduling constraints",
           "$ref": "#/definitions/v1.Affinity"
         },
         "automountServiceAccountToken": {
@@ -125,7 +125,7 @@
           "type": "string"
         },
         "securityContext": {
-          "description": "SecurityContext holds pod-level security attributes and common container settings. Optional: Defaults to empty.  See type description for default values of each field. See Pod.spec.securityContext (API version: v1)",
+          "description": "SecurityContext holds pod-level security attributes and common container settings. Optional: Defaults to empty.  See type description for default values of each field.",
           "$ref": "#/definitions/v1.PodSecurityContext"
         },
         "tolerations": {
@@ -147,7 +147,7 @@
           "x-kubernetes-list-type": "atomic"
         },
         "volumes": {
-          "description": "List of volumes that can be mounted by containers belonging to the pod. More info: https://kubernetes.io/docs/concepts/storage/volumes See Pod.spec.volumes (API version: v1)",
+          "description": "List of volumes that can be mounted by containers belonging to the pod. More info: https://kubernetes.io/docs/concepts/storage/volumes",
           "type": "array",
           "items": {
             "default": {},
@@ -207,16 +207,14 @@
           "items": {
             "default": {},
             "$ref": "#/definitions/v1.Artifact"
-          },
-          "x-kubernetes-list-type": "atomic"
+          }
         },
         "outputs": {
           "type": "array",
           "items": {
             "default": {},
             "$ref": "#/definitions/v1.Artifact"
-          },
-          "x-kubernetes-list-type": "atomic"
+          }
         }
       }
     },
@@ -320,7 +318,7 @@
           "x-kubernetes-list-type": "atomic"
         },
         "volumes": {
-          "description": "Volumes is a collection of volumes that are available to mount into the steps of the build. See Pod.spec.volumes (API version: v1)",
+          "description": "Volumes is a collection of volumes that are available to mount into the steps of the build.",
           "type": "array",
           "items": {
             "default": {},
@@ -680,7 +678,7 @@
           "$ref": "#/definitions/v1.PipelineRef"
         },
         "pipelineSpec": {
-          "description": "Specifying PipelineSpec can be disabled by setting `disable-inline-spec` feature flag. See Pipeline.spec (API version: tekton.dev/v1)",
+          "description": "Specifying PipelineSpec can be disabled by setting `disable-inline-spec` feature flag..",
           "$ref": "#/definitions/v1.PipelineSpec"
         },
         "status": {
@@ -761,7 +759,7 @@
           "format": "int64"
         },
         "pipelineSpec": {
-          "description": "PipelineSpec contains the exact spec used to instantiate the run. See Pipeline.spec (API version: tekton.dev/v1)",
+          "description": "PipelineRunSpec contains the exact spec used to instantiate the run",
           "$ref": "#/definitions/v1.PipelineSpec"
         },
         "provenance": {
@@ -822,7 +820,7 @@
           "$ref": "#/definitions/v1.Time"
         },
         "pipelineSpec": {
-          "description": "PipelineSpec contains the exact spec used to instantiate the run. See Pipeline.spec (API version: tekton.dev/v1)",
+          "description": "PipelineRunSpec contains the exact spec used to instantiate the run",
           "$ref": "#/definitions/v1.PipelineSpec"
         },
         "provenance": {
@@ -981,7 +979,7 @@
           "$ref": "#/definitions/v1.PipelineRef"
         },
         "pipelineSpec": {
-          "description": "PipelineSpec is a specification of a pipeline Note: PipelineSpec is in preview mode and not yet supported Specifying PipelineSpec can be disabled by setting `disable-inline-spec` feature flag. See Pipeline.spec (API version: tekton.dev/v1)",
+          "description": "PipelineSpec is a specification of a pipeline Note: PipelineSpec is in preview mode and not yet supported Specifying PipelineSpec can be disabled by setting `disable-inline-spec` feature flag..",
           "$ref": "#/definitions/v1.PipelineSpec"
         },
         "retries": {
@@ -1003,7 +1001,7 @@
           "$ref": "#/definitions/v1.TaskRef"
         },
         "taskSpec": {
-          "description": "TaskSpec is a specification of a task Specifying TaskSpec can be disabled by setting `disable-inline-spec` feature flag. See Task.spec (API version: tekton.dev/v1)",
+          "description": "TaskSpec is a specification of a task Specifying TaskSpec can be disabled by setting `disable-inline-spec` feature flag..",
           "$ref": "#/definitions/v1.EmbeddedTask"
         },
         "timeout": {
@@ -1550,7 +1548,7 @@
           "$ref": "#/definitions/v1.Ref"
         },
         "results": {
-          "description": "Results declares StepResults produced by the Step.\n\nIt can be used in an inlined Step when used to store Results to $(step.results.resultName.path). It cannot be used when referencing StepActions using [v1.Step.Ref]. The Results declared by the StepActions will be stored here instead.",
+          "description": "Results declares StepResults produced by the Step.\n\nThis is field is at an ALPHA stability level and gated by \"enable-step-actions\" feature flag.\n\nIt can be used in an inlined Step when used to store Results to $(step.results.resultName.path). It cannot be used when referencing StepActions using [v1.Step.Ref]. The Results declared by the StepActions will be stored here instead.",
           "type": "array",
           "items": {
             "default": {},
@@ -1634,7 +1632,7 @@
       }
     },
     "v1.StepResult": {
-      "description": "StepResult used to describe the Results of a Step.",
+      "description": "StepResult used to describe the Results of a Step.\n\nThis is field is at an BETA stability level and gated by \"enable-step-actions\" feature flag.",
       "type": "object",
       "required": [
         "name"
@@ -2108,7 +2106,7 @@
           "$ref": "#/definitions/v1.TaskRef"
         },
         "taskSpec": {
-          "description": "Specifying TaskSpec can be disabled by setting `disable-inline-spec` feature flag. See Task.spec (API version: tekton.dev/v1)",
+          "description": "Specifying PipelineSpec can be disabled by setting `disable-inline-spec` feature flag..",
           "$ref": "#/definitions/v1.TaskSpec"
         },
         "timeout": {
@@ -2380,7 +2378,7 @@
           "x-kubernetes-list-type": "atomic"
         },
         "volumes": {
-          "description": "Volumes is a collection of volumes that are available to mount into the steps of the build. See Pod.spec.volumes (API version: v1)",
+          "description": "Volumes is a collection of volumes that are available to mount into the steps of the build.",
           "type": "array",
           "items": {
             "default": {},
@@ -2485,7 +2483,7 @@
           "type": "string"
         },
         "volumeClaimTemplate": {
-          "description": "VolumeClaimTemplate is a template for a claim that will be created in the same namespace. The PipelineRun controller is responsible for creating a unique claim for each instance of PipelineRun. See PersistentVolumeClaim (API version: v1)",
+          "description": "VolumeClaimTemplate is a template for a claim that will be created in the same namespace. The PipelineRun controller is responsible for creating a unique claim for each instance of PipelineRun.",
           "$ref": "#/definitions/v1.PersistentVolumeClaim"
         }
       }

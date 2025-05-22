@@ -940,22 +940,6 @@ k8s.io/apimachinery/pkg/runtime.RawExtension
 </tr>
 </tbody>
 </table>
-<h3 id="triggers.tekton.dev/v1alpha1.EventInterceptor">EventInterceptor
-</h3>
-<p>
-(<em>Appears on:</em><a href="#triggers.tekton.dev/v1alpha1.EventListenerTrigger">EventListenerTrigger</a>)
-</p>
-<div>
-<p>EventInterceptor provides a hook to intercept and pre-process events</p>
-</div>
-<h3 id="triggers.tekton.dev/v1alpha1.EventListenerBinding">EventListenerBinding
-</h3>
-<p>
-(<em>Appears on:</em><a href="#triggers.tekton.dev/v1alpha1.EventListenerTrigger">EventListenerTrigger</a>)
-</p>
-<div>
-<p>EventListenerBinding refers to a particular TriggerBinding or ClusterTriggerBindingresource.</p>
-</div>
 <h3 id="triggers.tekton.dev/v1alpha1.EventListenerConfig">EventListenerConfig
 </h3>
 <p>
@@ -1127,14 +1111,6 @@ EventListenerConfig
 </tr>
 </tbody>
 </table>
-<h3 id="triggers.tekton.dev/v1alpha1.EventListenerTemplate">EventListenerTemplate
-</h3>
-<p>
-(<em>Appears on:</em><a href="#triggers.tekton.dev/v1alpha1.EventListenerTrigger">EventListenerTrigger</a>)
-</p>
-<div>
-<p>EventListenerTemplate refers to a particular TriggerTemplate resource.</p>
-</div>
 <h3 id="triggers.tekton.dev/v1alpha1.EventListenerTrigger">EventListenerTrigger
 </h3>
 <p>
@@ -1158,8 +1134,8 @@ provided instead of TriggerBinding, Interceptors and TriggerTemplate</p>
 <td>
 <code>bindings</code><br/>
 <em>
-<a href="#triggers.tekton.dev/v1alpha1.EventListenerBinding">
-[]EventListenerBinding
+<a href="#triggers.tekton.dev/v1alpha1.TriggerSpecBinding">
+[]TriggerSpecBinding
 </a>
 </em>
 </td>
@@ -1170,8 +1146,8 @@ provided instead of TriggerBinding, Interceptors and TriggerTemplate</p>
 <td>
 <code>template</code><br/>
 <em>
-<a href="#triggers.tekton.dev/v1alpha1.EventListenerTemplate">
-EventListenerTemplate
+<a href="#triggers.tekton.dev/v1alpha1.TriggerSpecTemplate">
+TriggerSpecTemplate
 </a>
 </em>
 </td>
@@ -1203,8 +1179,8 @@ string
 <td>
 <code>interceptors</code><br/>
 <em>
-<a href="#triggers.tekton.dev/v1alpha1.EventInterceptor">
-[]EventInterceptor
+<a href="#triggers.tekton.dev/v1alpha1.TriggerInterceptor">
+[]TriggerInterceptor
 </a>
 </em>
 </td>
@@ -2231,7 +2207,7 @@ string
 <h3 id="triggers.tekton.dev/v1alpha1.TriggerInterceptor">TriggerInterceptor
 </h3>
 <p>
-(<em>Appears on:</em><a href="#triggers.tekton.dev/v1alpha1.TriggerSpec">TriggerSpec</a>)
+(<em>Appears on:</em><a href="#triggers.tekton.dev/v1alpha1.EventListenerTrigger">EventListenerTrigger</a>, <a href="#triggers.tekton.dev/v1alpha1.TriggerSpec">TriggerSpec</a>)
 </p>
 <div>
 <p>TriggerInterceptor provides a hook to intercept and pre-process events</p>
@@ -2460,7 +2436,7 @@ as the Trigger itself</p>
 <h3 id="triggers.tekton.dev/v1alpha1.TriggerSpecBinding">TriggerSpecBinding
 </h3>
 <p>
-(<em>Appears on:</em><a href="#triggers.tekton.dev/v1alpha1.TriggerSpec">TriggerSpec</a>)
+(<em>Appears on:</em><a href="#triggers.tekton.dev/v1alpha1.EventListenerTrigger">EventListenerTrigger</a>, <a href="#triggers.tekton.dev/v1alpha1.TriggerSpec">TriggerSpec</a>)
 </p>
 <div>
 </div>
@@ -2538,7 +2514,7 @@ string
 <h3 id="triggers.tekton.dev/v1alpha1.TriggerSpecTemplate">TriggerSpecTemplate
 </h3>
 <p>
-(<em>Appears on:</em><a href="#triggers.tekton.dev/v1alpha1.TriggerSpec">TriggerSpec</a>)
+(<em>Appears on:</em><a href="#triggers.tekton.dev/v1alpha1.EventListenerTrigger">EventListenerTrigger</a>, <a href="#triggers.tekton.dev/v1alpha1.TriggerSpec">TriggerSpec</a>)
 </p>
 <div>
 </div>
@@ -3321,22 +3297,6 @@ k8s.io/apimachinery/pkg/runtime.RawExtension
 </tr>
 </tbody>
 </table>
-<h3 id="triggers.tekton.dev/v1beta1.EventInterceptor">EventInterceptor
-</h3>
-<p>
-(<em>Appears on:</em><a href="#triggers.tekton.dev/v1beta1.EventListenerTrigger">EventListenerTrigger</a>)
-</p>
-<div>
-<p>EventInterceptor provides a hook to intercept and pre-process events</p>
-</div>
-<h3 id="triggers.tekton.dev/v1beta1.EventListenerBinding">EventListenerBinding
-</h3>
-<p>
-(<em>Appears on:</em><a href="#triggers.tekton.dev/v1beta1.EventListenerTrigger">EventListenerTrigger</a>)
-</p>
-<div>
-<p>EventListenerBinding refers to a particular TriggerBinding or ClusterTriggerBinding resource.</p>
-</div>
 <h3 id="triggers.tekton.dev/v1beta1.EventListenerConfig">EventListenerConfig
 </h3>
 <p>
@@ -3531,14 +3491,6 @@ EventListenerConfig
 </tr>
 </tbody>
 </table>
-<h3 id="triggers.tekton.dev/v1beta1.EventListenerTemplate">EventListenerTemplate
-</h3>
-<p>
-(<em>Appears on:</em><a href="#triggers.tekton.dev/v1beta1.EventListenerTrigger">EventListenerTrigger</a>)
-</p>
-<div>
-<p>EventListenerTemplate refers to a particular TriggerTemplate resource.</p>
-</div>
 <h3 id="triggers.tekton.dev/v1beta1.EventListenerTrigger">EventListenerTrigger
 </h3>
 <p>
@@ -3562,8 +3514,8 @@ provided instead of TriggerBinding, Interceptors and TriggerTemplate</p>
 <td>
 <code>bindings</code><br/>
 <em>
-<a href="#triggers.tekton.dev/v1beta1.EventListenerBinding">
-[]EventListenerBinding
+<a href="#triggers.tekton.dev/v1beta1.TriggerSpecBinding">
+[]TriggerSpecBinding
 </a>
 </em>
 </td>
@@ -3574,8 +3526,8 @@ provided instead of TriggerBinding, Interceptors and TriggerTemplate</p>
 <td>
 <code>template</code><br/>
 <em>
-<a href="#triggers.tekton.dev/v1beta1.EventListenerTemplate">
-EventListenerTemplate
+<a href="#triggers.tekton.dev/v1beta1.TriggerSpecTemplate">
+TriggerSpecTemplate
 </a>
 </em>
 </td>
@@ -3607,8 +3559,8 @@ string
 <td>
 <code>interceptors</code><br/>
 <em>
-<a href="#triggers.tekton.dev/v1beta1.EventInterceptor">
-[]EventInterceptor
+<a href="#triggers.tekton.dev/v1beta1.TriggerInterceptor">
+[]TriggerInterceptor
 </a>
 </em>
 </td>
@@ -4450,7 +4402,7 @@ string
 <h3 id="triggers.tekton.dev/v1beta1.TriggerInterceptor">TriggerInterceptor
 </h3>
 <p>
-(<em>Appears on:</em><a href="#triggers.tekton.dev/v1beta1.EventListenerTriggerGroup">EventListenerTriggerGroup</a>, <a href="#triggers.tekton.dev/v1beta1.TriggerSpec">TriggerSpec</a>)
+(<em>Appears on:</em><a href="#triggers.tekton.dev/v1beta1.EventListenerTrigger">EventListenerTrigger</a>, <a href="#triggers.tekton.dev/v1beta1.EventListenerTriggerGroup">EventListenerTriggerGroup</a>, <a href="#triggers.tekton.dev/v1beta1.TriggerSpec">TriggerSpec</a>)
 </p>
 <div>
 <p>TriggerInterceptor provides a hook to intercept and pre-process events</p>
@@ -4630,7 +4582,7 @@ as the Trigger itself</p>
 <h3 id="triggers.tekton.dev/v1beta1.TriggerSpecBinding">TriggerSpecBinding
 </h3>
 <p>
-(<em>Appears on:</em><a href="#triggers.tekton.dev/v1beta1.TriggerSpec">TriggerSpec</a>)
+(<em>Appears on:</em><a href="#triggers.tekton.dev/v1beta1.EventListenerTrigger">EventListenerTrigger</a>, <a href="#triggers.tekton.dev/v1beta1.TriggerSpec">TriggerSpec</a>)
 </p>
 <div>
 </div>
@@ -4708,7 +4660,7 @@ string
 <h3 id="triggers.tekton.dev/v1beta1.TriggerSpecTemplate">TriggerSpecTemplate
 </h3>
 <p>
-(<em>Appears on:</em><a href="#triggers.tekton.dev/v1beta1.TriggerSpec">TriggerSpec</a>)
+(<em>Appears on:</em><a href="#triggers.tekton.dev/v1beta1.EventListenerTrigger">EventListenerTrigger</a>, <a href="#triggers.tekton.dev/v1beta1.TriggerSpec">TriggerSpec</a>)
 </p>
 <div>
 </div>
