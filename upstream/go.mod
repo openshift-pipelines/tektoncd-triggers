@@ -6,7 +6,7 @@ toolchain go1.22.5
 
 require (
 	github.com/GoogleCloudPlatform/cloud-builders/gcs-fetcher v0.0.0-20191203181535-308b93ad1f39
-	github.com/ahmetb/gen-crd-api-reference-docs v0.3.1-0.20220720053627-e327d0730470
+	github.com/ahmetb/gen-crd-api-reference-docs c2e9cae110cd
 	github.com/cloudevents/sdk-go/v2 v2.15.2
 	github.com/golang/protobuf v1.5.4
 	github.com/google/cel-go v0.20.1
