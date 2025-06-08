@@ -1,5 +1,5 @@
-ARG GO_BUILDER=brew.registry.redhat.io/rh-osbs/openshift-golang-builder:v1.22
-ARG RUNTIME=registry.access.redhat.com/ubi8/ubi-minimal@sha256:33161cf5ec11ea13bfe60cad64f56a3aa4d893852e8ec44b2fd2a6b40cc38539
+ARG GO_BUILDER=brew.registry.redhat.io/rh-osbs/openshift-golang-builder:v1.23
+ARG RUNTIME=registry.redhat.io/ubi8/ubi:latest@sha256:0c1757c4526cfd7fdfedc54fadf4940e7f453201de65c0fefd454f3dde117273
 
 FROM $GO_BUILDER AS builder
 
@@ -13,7 +13,7 @@ RUN go build -ldflags="-X 'knative.dev/pkg/changeset.rev=$(cat HEAD)'" -mod=vend
     ./cmd/webhook
 
 FROM $RUNTIME
-ARG VERSION=triggers-1.17
+ARG VERSION=triggers-1.17.2
 
 ENV CONTROLLER=/usr/local/bin/webhook \
     KO_APP=/ko-app \
@@ -33,9 +33,7 @@ LABEL \
       io.k8s.description="Red Hat OpenShift Pipelines Triggers Webhook" \
       io.openshift.tags="pipelines,tekton,openshift"
 
-RUN microdnf install -y shadow-utils && \
-    groupadd -r -g 65532 nonroot && \
-    useradd --no-log-init -r -u 65532 -g nonroot nonroot
+RUN groupadd -r -g 65532 nonroot && useradd --no-log-init -r -u 65532 -g nonroot nonroot
 
 USER 65532
 ENTRYPOINT ["/ko-app/webhook"]
