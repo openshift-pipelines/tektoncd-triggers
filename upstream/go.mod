@@ -5,7 +5,7 @@ go 1.23.0
 toolchain go1.24.1
 
 require (
-	github.com/GoogleCloudPlatform/cloud-builders/gcs-fetcher v0.0.0-20191203181535-308b93ad1f39
+	github.com/GoogleCloudPlatform/cloud-builders/gcs-fetcher v0.0.0-20250307221303-f782267d91ec
 	github.com/ahmetb/gen-crd-api-reference-docs v0.3.1-0.20220720053627-e327d0730470
 	github.com/cloudevents/sdk-go/v2 v2.15.2
 	github.com/golang/protobuf v1.5.4
