@@ -147,7 +147,7 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240401170217-c3f982113cda // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/gengo v0.0.0-20221011193443-fad74ee6edd9 // indirect
+	k8s.io/gengo v0.0.0-20250704022524-ddb642e17a28 // indirect
 	k8s.io/klog v1.0.0 // indirect
 	k8s.io/utils v0.0.0-20230726121419-3b25d923346b // indirect
 	knative.dev/networking v0.0.0-20231012062757-a5958051caf8 // indirect
