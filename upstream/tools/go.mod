@@ -5,7 +5,7 @@ go 1.17
 require github.com/golangci/golangci-lint v1.47.2
 
 require (
-	4d63.com/gochecknoglobals v0.1.0 // indirect
+	4d63.com/gochecknoglobals v0.2.2 // indirect
 	github.com/Antonboom/errname v0.1.7 // indirect
 	github.com/Antonboom/nilnil v0.1.1 // indirect
 	github.com/BurntSushi/toml v1.1.0 // indirect
