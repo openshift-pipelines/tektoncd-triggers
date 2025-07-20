@@ -2,7 +2,7 @@ module github.com/tektoncd/triggers
 
 go 1.23.0
 
-toolchain go1.23.8
+toolchain go1.24.5
 
 require (
 	github.com/GoogleCloudPlatform/cloud-builders/gcs-fetcher v0.0.0-20191203181535-308b93ad1f39
