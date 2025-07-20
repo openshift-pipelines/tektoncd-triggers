@@ -11,7 +11,7 @@ require (
 	github.com/google/go-cmp v0.6.0
 	github.com/google/go-github/v31 v31.0.0
 	github.com/google/uuid v1.5.0
-	github.com/gorilla/mux v1.8.0
+	github.com/gorilla/mux v1.8.1
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.7.0
 	github.com/tektoncd/pipeline v0.56.0
