@@ -5,7 +5,7 @@ go 1.23.0
 toolchain go1.24.1
 
 require (
-	github.com/GoogleCloudPlatform/cloud-builders/gcs-fetcher v0.0.0-20191203181535-308b93ad1f39
+	github.com/GoogleCloudPlatform/cloud-builders/gcs-fetcher v0.0.0-20250716160905-9ba4c9b99335
 	github.com/ahmetb/gen-crd-api-reference-docs v0.3.1-0.20220720053627-e327d0730470
 	github.com/cloudevents/sdk-go/v2 v2.15.2
 	github.com/golang/protobuf v1.5.4
@@ -23,7 +23,7 @@ require (
 	go.uber.org/zap v1.27.0
 	golang.org/x/oauth2 v0.18.0
 	golang.org/x/sync v0.11.0
-	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2
+	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028
 	google.golang.org/grpc v1.63.2
 	google.golang.org/protobuf v1.33.0
 	gopkg.in/yaml.v2 v2.4.0
