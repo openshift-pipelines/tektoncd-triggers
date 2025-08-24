@@ -1,6 +1,8 @@
 module github.com/tektoncd/triggers/tools
 
-go 1.17
+go 1.21
+
+toolchain go1.24.6
 
 require github.com/golangci/golangci-lint v1.47.2
 
@@ -56,7 +58,7 @@ require (
 	github.com/golangci/lint-1 v0.0.0-20191013205115-297bf364a8e0 // indirect
 	github.com/golangci/maligned v0.0.0-20180506175553-b1d89398deca // indirect
 	github.com/golangci/misspell v0.3.5 // indirect
-	github.com/golangci/revgrep v0.0.0-20210930125155-c22e5001d4f2 // indirect
+	github.com/golangci/revgrep v0.8.0 // indirect
 	github.com/golangci/unconvert v0.0.0-20180507085042-28b1c447d1f4 // indirect
 	github.com/google/go-cmp v0.5.8 // indirect
 	github.com/gordonklaus/ineffassign v0.0.0-20210914165742-4cc7213b9bc8 // indirect
