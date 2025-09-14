@@ -2,7 +2,7 @@ module github.com/tektoncd/triggers/tools
 
 go 1.23.0
 
-toolchain go1.23.8
+toolchain go1.25.1
 
 require github.com/golangci/golangci-lint/v2 v2.1.6
 
