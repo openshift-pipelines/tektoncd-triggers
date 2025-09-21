@@ -55,8 +55,8 @@ contrib.go.opencensus.io/exporter/prometheus
 # contrib.go.opencensus.io/exporter/zipkin v0.1.2
 ## explicit
 contrib.go.opencensus.io/exporter/zipkin
-# github.com/GoogleCloudPlatform/cloud-builders/gcs-fetcher v0.0.0-20191203181535-308b93ad1f39
-## explicit
+# github.com/GoogleCloudPlatform/cloud-builders/gcs-fetcher v0.0.0-20250915205229-b0101b49eb38
+## explicit; go 1.21
 github.com/GoogleCloudPlatform/cloud-builders/gcs-fetcher/cmd/gcs-fetcher
 github.com/GoogleCloudPlatform/cloud-builders/gcs-fetcher/pkg/common
 github.com/GoogleCloudPlatform/cloud-builders/gcs-fetcher/pkg/fetcher
