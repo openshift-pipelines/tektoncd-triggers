@@ -27,6 +27,7 @@ LABEL \
       com.redhat.component="openshift-pipelines-triggers-controller-rhel9-container" \
       name="openshift-pipelines/pipelines-triggers-controller-rhel9" \
       version=$VERSION \
+      cpe="cpe:/a:redhat:openshift_pipelines:1.19::el9" \
       summary="Red Hat OpenShift Pipelines Triggers Controller" \
       maintainer="pipelines-extcomm@redhat.com" \
       description="Red Hat OpenShift Pipelines Triggers Controller" \
