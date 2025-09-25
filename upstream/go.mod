@@ -1,6 +1,8 @@
 module github.com/tektoncd/triggers
 
-go 1.19
+go 1.23
+
+toolchain go1.24.6
 
 require (
 	github.com/GoogleCloudPlatform/cloud-builders/gcs-fetcher v0.0.0-20191203181535-308b93ad1f39
@@ -151,6 +153,6 @@ require (
 	k8s.io/klog v1.0.0 // indirect
 	k8s.io/utils v0.0.0-20230505201702-9f6742963106 // indirect
 	knative.dev/networking v0.0.0-20231012062757-a5958051caf8 // indirect
-	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
+	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
 )
