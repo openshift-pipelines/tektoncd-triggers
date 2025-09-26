@@ -1,6 +1,8 @@
 module github.com/tektoncd/triggers/tools
 
-go 1.17
+go 1.22.9
+
+toolchain go1.24.6
 
 require github.com/golangci/golangci-lint v1.47.2
 
@@ -61,7 +63,7 @@ require (
 	github.com/google/go-cmp v0.5.8 // indirect
 	github.com/gordonklaus/ineffassign v0.0.0-20210914165742-4cc7213b9bc8 // indirect
 	github.com/gostaticanalysis/analysisutil v0.7.1 // indirect
-	github.com/gostaticanalysis/comment v1.4.2 // indirect
+	github.com/gostaticanalysis/comment v1.5.0 // indirect
 	github.com/gostaticanalysis/forcetypeassert v0.1.0 // indirect
 	github.com/gostaticanalysis/nilerr v0.1.1 // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
