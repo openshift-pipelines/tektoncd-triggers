@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2024 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,12 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// This file, and the {{.RootMod}} import, won't actually become part of
-// the resultant binary.
-//go:build modhack
-// +build modhack
+//go:build !windows && !linux
 
 package metadata
 
-// Necessary for safely adding multi-module repo. See: https://github.com/golang/go/wiki/Modules#is-it-possible-to-add-a-module-to-a-multi-module-repository
-import _ "cloud.google.com/go/compute/internal"
+// systemInfoSuggestsGCE reports whether the local system (without
+// doing network requests) suggests that we're running on GCE. If this
+// returns true, testOnGCE tries a bit harder to reach its metadata
+// server.
+//
+// NOTE: systemInfoSuggestsGCE is assigned to a varible for test stubbing purposes.
+var systemInfoSuggestsGCE = func() bool {
+	// We don't currently have checks for other GOOS
+	return false
+}
