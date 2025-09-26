@@ -37,7 +37,7 @@ require (
 	github.com/firefart/nonamedreturns v1.0.4 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/fzipp/gocyclo v0.6.0 // indirect
-	github.com/go-critic/go-critic v0.6.3 // indirect
+	github.com/go-critic/go-critic v0.13.0 // indirect
 	github.com/go-toolsmith/astcast v1.0.0 // indirect
 	github.com/go-toolsmith/astcopy v1.0.0 // indirect
 	github.com/go-toolsmith/astequal v1.0.1 // indirect
