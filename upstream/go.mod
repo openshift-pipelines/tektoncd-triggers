@@ -159,5 +159,5 @@ require (
 	k8s.io/utils v0.0.0-20241210054802-24370beab758 // indirect
 	knative.dev/networking v0.0.0-20231017124814-2a7676e912b7 // indirect
 	sigs.k8s.io/json v0.0.0-20241014173422-cfa47c3a1cc8 // indirect
-	sigs.k8s.io/structured-merge-diff/v4 v4.5.0 // indirect
+	sigs.k8s.io/structured-merge-diff/v4 v4.7.0 // indirect
 )
