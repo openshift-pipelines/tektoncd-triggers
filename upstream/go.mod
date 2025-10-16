@@ -15,7 +15,7 @@ require (
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.9.1
 	github.com/tektoncd/pipeline v1.3.1
-	github.com/tektoncd/plumbing v0.0.0-20250430145243-3b7cd59879c1
+	github.com/tektoncd/plumbing v0.0.0-20251016142021-a5b3bfea61c8
 	github.com/tidwall/sjson v1.2.5
 	go.opencensus.io v0.24.0
 	go.opentelemetry.io/otel v1.37.0
