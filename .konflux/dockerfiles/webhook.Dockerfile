@@ -14,7 +14,7 @@ RUN go build -ldflags="-X 'knative.dev/pkg/changeset.rev=$(cat HEAD)'" -mod=vend
     ./cmd/webhook
 
 FROM $RUNTIME
-ARG VERSION=triggers-next
+ARG VERSION=triggers-1.21
 
 ENV CONTROLLER=/usr/local/bin/webhook \
     KO_APP=/ko-app \
