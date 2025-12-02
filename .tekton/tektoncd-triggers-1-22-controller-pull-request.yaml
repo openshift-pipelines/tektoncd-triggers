@@ -17,7 +17,7 @@ metadata:
       ".tekton/tektoncd-triggers-1-22-controller-pull-request.yaml".pathChanged())
   labels:
     appstudio.openshift.io/application: openshift-pipelines-core-1-22
-    appstudio.openshift.io/component: tektoncd-triggers-controller-1-22
+    appstudio.openshift.io/component: tektoncd-triggers-1-22-controller
     pipelines.appstudio.openshift.io/type: build
   name: tektoncd-triggers-1-22-controller-on-pull-request
   namespace: tekton-ecosystem-tenant
@@ -25,6 +25,8 @@ spec:
   params:
   - name: git-url
     value: '{{source_url}}'
+  - name: upstream-git-url
+    value: 'https://github.com/tektoncd/triggers'
   - name: revision
     value: '{{revision}}'
   - name: output-image
@@ -35,18 +37,17 @@ spec:
     value: .konflux/dockerfiles/controller.Dockerfile
   - name: additional-tags
     value:
-      - "on-pr-1.22"
       - "on-pr-1.22.0"
   - name: build-platforms
     value:
-    - linux/x86_64
+     - linux/x86_64
   - name: prefetch-input
     value: |
       {"type": "rpm", "path": ".konflux/rpms"}
   pipelineRef:
     name: docker-build-ta
   taskRunTemplate:
-    serviceAccountName: build-pipeline-tektoncd-triggers-controller-1-22
+    serviceAccountName: build-pipeline-tektoncd-triggers-1-22-controller
   workspaces:
   - name: git-auth
     secret:
