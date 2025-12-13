@@ -19,7 +19,6 @@ package json
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"io"
 )
 
@@ -33,7 +32,7 @@ var (
 	// Unmarshal is an alias for json.Unmarshal
 	Unmarshal = json.Unmarshal
 
-	// Marshal is an alias for json.Marshal
+	//Marshal is an alias for json.Marshal
 	Marshal = json.Marshal
 )
 
@@ -96,7 +95,7 @@ func findMetadataOffsets(bites []byte) (start, end int64, err error) {
 
 	for {
 		t, err = dec.Token()
-		if errors.Is(err, io.EOF) {
+		if err == io.EOF { //nolint
 			break
 		}
 		if err != nil {
