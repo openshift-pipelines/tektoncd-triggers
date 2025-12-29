@@ -33,8 +33,6 @@ import (
 	"github.com/tektoncd/triggers/pkg/apis/triggers"
 	triggersv1 "github.com/tektoncd/triggers/pkg/apis/triggers/v1beta1"
 	triggersclientset "github.com/tektoncd/triggers/pkg/client/clientset/versioned"
-	dynamicClientset "github.com/tektoncd/triggers/pkg/client/dynamic/clientset"
-	"github.com/tektoncd/triggers/pkg/client/dynamic/clientset/tekton"
 	"github.com/tektoncd/triggers/pkg/sink"
 	"github.com/tektoncd/triggers/pkg/template"
 	"go.uber.org/zap"
@@ -75,7 +73,7 @@ func init() {
 func rootRun(cmd *cobra.Command, args []string) error {
 	err := trigger(triggerFile, httpPath, action, kubeconfig, os.Stdout)
 	if err != nil {
-		return fmt.Errorf("fail to call trigger: %v", err)
+		return fmt.Errorf("fail to call trigger: %w", err)
 	}
 
 	return nil
@@ -154,14 +152,14 @@ func readTrigger(path string) ([]*triggersv1.Trigger, error) {
 	for err == nil {
 		_, _, err = decoder.Decode(nil, b)
 		if err != nil {
-			if err != io.EOF {
+			if !errors.Is(err, io.EOF) {
 				return nil, fmt.Errorf("error decoding triggers: %w", err)
 			}
 			break
 		}
 		list = append(list, b)
 	}
-	if err != nil && err != io.EOF {
+	if err != nil && !errors.Is(err, io.EOF) {
 		return nil, fmt.Errorf("error decoding triggers: %w", err)
 	}
 
@@ -254,7 +252,6 @@ func newSink(ctx context.Context, config *rest.Config) sink.Sink {
 		log.Fatalf("Failed to get the dynamic client: %v", err)
 	}
 
-	dynamicCS := dynamicClientset.New(tekton.WithClient(dynamicClient))
 	kubeClient, _, err := getKubeClient(kubeconfig)
 	if err != nil {
 		log.Fatalf("fail to get clients: %v", err)
@@ -266,7 +263,7 @@ func newSink(ctx context.Context, config *rest.Config) sink.Sink {
 		Auth:                   sink.DefaultAuthOverride{},
 		WGProcessTriggers:      &sync.WaitGroup{},
 		DiscoveryClient:        sinkClients.DiscoveryClient,
-		DynamicClient:          dynamicCS,
+		DynamicClient:          dynamicClient,
 		Logger:                 logging.FromContext(ctx),
 		EventListenerNamespace: "default",
 	}
@@ -283,12 +280,12 @@ func getKubeClient(kubeconfig string) (kubernetes.Interface, triggersclientset.I
 
 	kubeClient, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		return nil, nil, fmt.Errorf("Failed to get the Kubernetes client set: %v", err)
+		return nil, nil, fmt.Errorf("Failed to get the Kubernetes client set: %w", err)
 	}
 
 	client, err := triggersclientset.NewForConfig(config)
 	if err != nil {
-		return nil, nil, fmt.Errorf("Failed to get the trigger client set: %v", err)
+		return nil, nil, fmt.Errorf("Failed to get the trigger client set: %w", err)
 	}
 
 	return kubeClient, client, nil

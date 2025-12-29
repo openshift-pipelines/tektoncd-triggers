@@ -289,7 +289,7 @@ func TestResolveToURL(t *testing.T) {
 		want   string
 	}{{
 		name: "ClusterInterceptor has status.address.url",
-		getter: func(n string) (*v1alpha1.ClusterInterceptor, error) {
+		getter: func(_ string) (*v1alpha1.ClusterInterceptor, error) {
 			return &v1alpha1.ClusterInterceptor{
 				Status: v1alpha1.ClusterInterceptorStatus{
 					AddressStatus: duckv1.AddressStatus{
@@ -338,7 +338,7 @@ func TestResolveToURL(t *testing.T) {
 	}
 
 	t.Run("interceptor has no URL", func(t *testing.T) {
-		fakeGetter := func(name string) (*v1alpha1.ClusterInterceptor, error) {
+		fakeGetter := func(_ string) (*v1alpha1.ClusterInterceptor, error) {
 			return &v1alpha1.ClusterInterceptor{
 				Spec: v1alpha1.ClusterInterceptorSpec{
 					ClientConfig: v1alpha1.ClientConfig{
@@ -351,6 +351,21 @@ func TestResolveToURL(t *testing.T) {
 		if !errors.Is(err, v1alpha1.ErrNilURL) {
 			t.Fatalf("ResolveToURL expected error to be %s but got %s", v1alpha1.ErrNilURL, err)
 		}
+	})
+}
+
+type localT struct {
+	T *testing.T
+}
+
+func (t localT) testHeader(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		contentType := r.Header.Get("Content-Type")
+		if contentType != interceptors.ContentType {
+			t.T.Fatalf("Header expected to be: %s but got :%s",
+				interceptors.ContentType, contentType)
+		}
+		next.ServeHTTP(w, r)
 	})
 }
 
@@ -427,7 +442,13 @@ func TestExecute(t *testing.T) {
 			if err != nil {
 				t.Fatalf("failed to initialize core interceptors: %v", err)
 			}
-			httpClient := testServer(t, coreInterceptors)
+
+			lT := localT{
+				T: t,
+			}
+
+			handler := lT.testHeader(coreInterceptors)
+			httpClient := testServer(t, handler)
 			got, err := interceptors.Execute(context.Background(), httpClient, tc.req, tc.url)
 			if err != nil {
 				t.Fatalf("Execute() unexpected error: %s", err)
@@ -446,7 +467,7 @@ func TestExecute_Error(t *testing.T) {
 			"Content-Type": {"application/json"},
 		}),
 		Context: &triggersv1.TriggerContext{
-			EventURL:  "http://someurl.com",
+			EventURL:  "http://somurel.com",
 			EventID:   "abcde",
 			TriggerID: "namespaces/default/triggers/test-trigger",
 		},

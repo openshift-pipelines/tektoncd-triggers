@@ -28,6 +28,8 @@ Resource Types:
 <a href="#triggers.tekton.dev/v1alpha1.Trigger">Trigger</a>
 </li><li>
 <a href="#triggers.tekton.dev/v1alpha1.TriggerBinding">TriggerBinding</a>
+</li><li>
+<a href="#triggers.tekton.dev/v1alpha1.TriggerTemplate">TriggerTemplate</a>
 </li></ul>
 <h3 id="triggers.tekton.dev/v1alpha1.ClusterTriggerBinding">ClusterTriggerBinding
 </h3>
@@ -479,6 +481,108 @@ TriggerBindingStatus
 </tr>
 </tbody>
 </table>
+<h3 id="triggers.tekton.dev/v1alpha1.TriggerTemplate">TriggerTemplate
+</h3>
+<div>
+<p>TriggerTemplate takes parameters and uses them to create CRDs</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>apiVersion</code><br/>
+string</td>
+<td>
+<code>
+triggers.tekton.dev/v1alpha1
+</code>
+</td>
+</tr>
+<tr>
+<td>
+<code>kind</code><br/>
+string
+</td>
+<td><code>TriggerTemplate</code></td>
+</tr>
+<tr>
+<td>
+<code>metadata</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#objectmeta-v1-meta">
+Kubernetes meta/v1.ObjectMeta
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+Refer to the Kubernetes API documentation for the fields of the
+<code>metadata</code> field.
+</td>
+</tr>
+<tr>
+<td>
+<code>spec</code><br/>
+<em>
+<a href="#triggers.tekton.dev/v1alpha1.TriggerTemplateSpec">
+TriggerTemplateSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Spec holds the desired state of the TriggerTemplate from the client</p>
+<br/>
+<br/>
+<table>
+<tr>
+<td>
+<code>params</code><br/>
+<em>
+<a href="#triggers.tekton.dev/v1alpha1.ParamSpec">
+[]ParamSpec
+</a>
+</em>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<code>resourcetemplates</code><br/>
+<em>
+<a href="#triggers.tekton.dev/v1alpha1.TriggerResourceTemplate">
+[]TriggerResourceTemplate
+</a>
+</em>
+</td>
+<td>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr>
+<td>
+<code>status</code><br/>
+<em>
+<a href="#triggers.tekton.dev/v1alpha1.TriggerTemplateStatus">
+TriggerTemplateStatus
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+</td>
+</tr>
+</tbody>
+</table>
 <h3 id="triggers.tekton.dev/v1alpha1.BitbucketInterceptor">BitbucketInterceptor
 </h3>
 <p>
@@ -836,6 +940,22 @@ k8s.io/apimachinery/pkg/runtime.RawExtension
 </tr>
 </tbody>
 </table>
+<h3 id="triggers.tekton.dev/v1alpha1.EventInterceptor">EventInterceptor
+</h3>
+<p>
+(<em>Appears on:</em><a href="#triggers.tekton.dev/v1alpha1.EventListenerTrigger">EventListenerTrigger</a>)
+</p>
+<div>
+<p>EventInterceptor provides a hook to intercept and pre-process events</p>
+</div>
+<h3 id="triggers.tekton.dev/v1alpha1.EventListenerBinding">EventListenerBinding
+</h3>
+<p>
+(<em>Appears on:</em><a href="#triggers.tekton.dev/v1alpha1.EventListenerTrigger">EventListenerTrigger</a>)
+</p>
+<div>
+<p>EventListenerBinding refers to a particular TriggerBinding or ClusterTriggerBindingresource.</p>
+</div>
 <h3 id="triggers.tekton.dev/v1alpha1.EventListenerConfig">EventListenerConfig
 </h3>
 <p>
@@ -989,7 +1109,7 @@ knative.dev/pkg/apis/duck/v1alpha1.AddressStatus
 (Members of <code>AddressStatus</code> are embedded into this type.)
 </p>
 <p>EventListener is Addressable. It currently exposes the service DNS
-address of the the EventListener sink</p>
+address of the EventListener sink</p>
 </td>
 </tr>
 <tr>
@@ -1007,6 +1127,14 @@ EventListenerConfig
 </tr>
 </tbody>
 </table>
+<h3 id="triggers.tekton.dev/v1alpha1.EventListenerTemplate">EventListenerTemplate
+</h3>
+<p>
+(<em>Appears on:</em><a href="#triggers.tekton.dev/v1alpha1.EventListenerTrigger">EventListenerTrigger</a>)
+</p>
+<div>
+<p>EventListenerTemplate refers to a particular TriggerTemplate resource.</p>
+</div>
 <h3 id="triggers.tekton.dev/v1alpha1.EventListenerTrigger">EventListenerTrigger
 </h3>
 <p>
@@ -1030,8 +1158,8 @@ provided instead of TriggerBinding, Interceptors and TriggerTemplate</p>
 <td>
 <code>bindings</code><br/>
 <em>
-<a href="#triggers.tekton.dev/v1alpha1.TriggerSpecBinding">
-[]TriggerSpecBinding
+<a href="#triggers.tekton.dev/v1alpha1.EventListenerBinding">
+[]EventListenerBinding
 </a>
 </em>
 </td>
@@ -1042,8 +1170,8 @@ provided instead of TriggerBinding, Interceptors and TriggerTemplate</p>
 <td>
 <code>template</code><br/>
 <em>
-<a href="#triggers.tekton.dev/v1alpha1.TriggerSpecTemplate">
-TriggerSpecTemplate
+<a href="#triggers.tekton.dev/v1alpha1.EventListenerTemplate">
+EventListenerTemplate
 </a>
 </em>
 </td>
@@ -1075,8 +1203,8 @@ string
 <td>
 <code>interceptors</code><br/>
 <em>
-<a href="#triggers.tekton.dev/v1alpha1.TriggerInterceptor">
-[]TriggerInterceptor
+<a href="#triggers.tekton.dev/v1alpha1.EventInterceptor">
+[]EventInterceptor
 </a>
 </em>
 </td>
@@ -2103,7 +2231,7 @@ string
 <h3 id="triggers.tekton.dev/v1alpha1.TriggerInterceptor">TriggerInterceptor
 </h3>
 <p>
-(<em>Appears on:</em><a href="#triggers.tekton.dev/v1alpha1.EventListenerTrigger">EventListenerTrigger</a>, <a href="#triggers.tekton.dev/v1alpha1.TriggerSpec">TriggerSpec</a>)
+(<em>Appears on:</em><a href="#triggers.tekton.dev/v1alpha1.TriggerSpec">TriggerSpec</a>)
 </p>
 <div>
 <p>TriggerInterceptor provides a hook to intercept and pre-process events</p>
@@ -2332,7 +2460,7 @@ as the Trigger itself</p>
 <h3 id="triggers.tekton.dev/v1alpha1.TriggerSpecBinding">TriggerSpecBinding
 </h3>
 <p>
-(<em>Appears on:</em><a href="#triggers.tekton.dev/v1alpha1.EventListenerTrigger">EventListenerTrigger</a>, <a href="#triggers.tekton.dev/v1alpha1.TriggerSpec">TriggerSpec</a>)
+(<em>Appears on:</em><a href="#triggers.tekton.dev/v1alpha1.TriggerSpec">TriggerSpec</a>)
 </p>
 <div>
 </div>
@@ -2410,7 +2538,7 @@ string
 <h3 id="triggers.tekton.dev/v1alpha1.TriggerSpecTemplate">TriggerSpecTemplate
 </h3>
 <p>
-(<em>Appears on:</em><a href="#triggers.tekton.dev/v1alpha1.EventListenerTrigger">EventListenerTrigger</a>, <a href="#triggers.tekton.dev/v1alpha1.TriggerSpec">TriggerSpec</a>)
+(<em>Appears on:</em><a href="#triggers.tekton.dev/v1alpha1.TriggerSpec">TriggerSpec</a>)
 </p>
 <div>
 </div>
@@ -2460,95 +2588,10 @@ TriggerTemplateSpec
 </tr>
 </tbody>
 </table>
-<h3 id="triggers.tekton.dev/v1alpha1.TriggerTemplate">TriggerTemplate
-</h3>
-<div>
-<p>TriggerTemplate takes parameters and uses them to create CRDs</p>
-</div>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<code>metadata</code><br/>
-<em>
-<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#objectmeta-v1-meta">
-Kubernetes meta/v1.ObjectMeta
-</a>
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-Refer to the Kubernetes API documentation for the fields of the
-<code>metadata</code> field.
-</td>
-</tr>
-<tr>
-<td>
-<code>spec</code><br/>
-<em>
-<a href="#triggers.tekton.dev/v1alpha1.TriggerTemplateSpec">
-TriggerTemplateSpec
-</a>
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>Spec holds the desired state of the TriggerTemplate from the client</p>
-<br/>
-<br/>
-<table>
-<tr>
-<td>
-<code>params</code><br/>
-<em>
-<a href="#triggers.tekton.dev/v1alpha1.ParamSpec">
-[]ParamSpec
-</a>
-</em>
-</td>
-<td>
-</td>
-</tr>
-<tr>
-<td>
-<code>resourcetemplates</code><br/>
-<em>
-<a href="#triggers.tekton.dev/v1alpha1.TriggerResourceTemplate">
-[]TriggerResourceTemplate
-</a>
-</em>
-</td>
-<td>
-</td>
-</tr>
-</table>
-</td>
-</tr>
-<tr>
-<td>
-<code>status</code><br/>
-<em>
-<a href="#triggers.tekton.dev/v1alpha1.TriggerTemplateStatus">
-TriggerTemplateStatus
-</a>
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-</td>
-</tr>
-</tbody>
-</table>
 <h3 id="triggers.tekton.dev/v1alpha1.TriggerTemplateSpec">TriggerTemplateSpec
 </h3>
 <p>
-(<em>Appears on:</em><a href="#triggers.tekton.dev/v1alpha1.TriggerSpecTemplate">TriggerSpecTemplate</a>, <a href="#triggers.tekton.dev/v1alpha1.TriggerTemplate">TriggerTemplate</a>)
+(<em>Appears on:</em><a href="#triggers.tekton.dev/v1alpha1.TriggerTemplate">TriggerTemplate</a>, <a href="#triggers.tekton.dev/v1alpha1.TriggerSpecTemplate">TriggerSpecTemplate</a>)
 </p>
 <div>
 <p>TriggerTemplateSpec holds the desired state of TriggerTemplate</p>
@@ -2670,6 +2713,8 @@ Resource Types:
 <a href="#triggers.tekton.dev/v1beta1.Trigger">Trigger</a>
 </li><li>
 <a href="#triggers.tekton.dev/v1beta1.TriggerBinding">TriggerBinding</a>
+</li><li>
+<a href="#triggers.tekton.dev/v1beta1.TriggerTemplate">TriggerTemplate</a>
 </li></ul>
 <h3 id="triggers.tekton.dev/v1beta1.ClusterTriggerBinding">ClusterTriggerBinding
 </h3>
@@ -3144,6 +3189,108 @@ TriggerBindingStatus
 </tr>
 </tbody>
 </table>
+<h3 id="triggers.tekton.dev/v1beta1.TriggerTemplate">TriggerTemplate
+</h3>
+<div>
+<p>TriggerTemplate takes parameters and uses them to create CRDs</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>apiVersion</code><br/>
+string</td>
+<td>
+<code>
+triggers.tekton.dev/v1beta1
+</code>
+</td>
+</tr>
+<tr>
+<td>
+<code>kind</code><br/>
+string
+</td>
+<td><code>TriggerTemplate</code></td>
+</tr>
+<tr>
+<td>
+<code>metadata</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#objectmeta-v1-meta">
+Kubernetes meta/v1.ObjectMeta
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+Refer to the Kubernetes API documentation for the fields of the
+<code>metadata</code> field.
+</td>
+</tr>
+<tr>
+<td>
+<code>spec</code><br/>
+<em>
+<a href="#triggers.tekton.dev/v1beta1.TriggerTemplateSpec">
+TriggerTemplateSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Spec holds the desired state of the TriggerTemplate from the client</p>
+<br/>
+<br/>
+<table>
+<tr>
+<td>
+<code>params</code><br/>
+<em>
+<a href="#triggers.tekton.dev/v1beta1.ParamSpec">
+[]ParamSpec
+</a>
+</em>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<code>resourcetemplates</code><br/>
+<em>
+<a href="#triggers.tekton.dev/v1beta1.TriggerResourceTemplate">
+[]TriggerResourceTemplate
+</a>
+</em>
+</td>
+<td>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr>
+<td>
+<code>status</code><br/>
+<em>
+<a href="#triggers.tekton.dev/v1beta1.TriggerTemplateStatus">
+TriggerTemplateStatus
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+</td>
+</tr>
+</tbody>
+</table>
 <h3 id="triggers.tekton.dev/v1beta1.CustomResource">CustomResource
 </h3>
 <p>
@@ -3174,6 +3321,22 @@ k8s.io/apimachinery/pkg/runtime.RawExtension
 </tr>
 </tbody>
 </table>
+<h3 id="triggers.tekton.dev/v1beta1.EventInterceptor">EventInterceptor
+</h3>
+<p>
+(<em>Appears on:</em><a href="#triggers.tekton.dev/v1beta1.EventListenerTrigger">EventListenerTrigger</a>)
+</p>
+<div>
+<p>EventInterceptor provides a hook to intercept and pre-process events</p>
+</div>
+<h3 id="triggers.tekton.dev/v1beta1.EventListenerBinding">EventListenerBinding
+</h3>
+<p>
+(<em>Appears on:</em><a href="#triggers.tekton.dev/v1beta1.EventListenerTrigger">EventListenerTrigger</a>)
+</p>
+<div>
+<p>EventListenerBinding refers to a particular TriggerBinding or ClusterTriggerBinding resource.</p>
+</div>
 <h3 id="triggers.tekton.dev/v1beta1.EventListenerConfig">EventListenerConfig
 </h3>
 <p>
@@ -3350,7 +3513,7 @@ knative.dev/pkg/apis/duck/v1beta1.AddressStatus
 (Members of <code>AddressStatus</code> are embedded into this type.)
 </p>
 <p>EventListener is Addressable. It currently exposes the service DNS
-address of the the EventListener sink</p>
+address of the EventListener sink</p>
 </td>
 </tr>
 <tr>
@@ -3368,6 +3531,14 @@ EventListenerConfig
 </tr>
 </tbody>
 </table>
+<h3 id="triggers.tekton.dev/v1beta1.EventListenerTemplate">EventListenerTemplate
+</h3>
+<p>
+(<em>Appears on:</em><a href="#triggers.tekton.dev/v1beta1.EventListenerTrigger">EventListenerTrigger</a>)
+</p>
+<div>
+<p>EventListenerTemplate refers to a particular TriggerTemplate resource.</p>
+</div>
 <h3 id="triggers.tekton.dev/v1beta1.EventListenerTrigger">EventListenerTrigger
 </h3>
 <p>
@@ -3391,8 +3562,8 @@ provided instead of TriggerBinding, Interceptors and TriggerTemplate</p>
 <td>
 <code>bindings</code><br/>
 <em>
-<a href="#triggers.tekton.dev/v1beta1.TriggerSpecBinding">
-[]TriggerSpecBinding
+<a href="#triggers.tekton.dev/v1beta1.EventListenerBinding">
+[]EventListenerBinding
 </a>
 </em>
 </td>
@@ -3403,8 +3574,8 @@ provided instead of TriggerBinding, Interceptors and TriggerTemplate</p>
 <td>
 <code>template</code><br/>
 <em>
-<a href="#triggers.tekton.dev/v1beta1.TriggerSpecTemplate">
-TriggerSpecTemplate
+<a href="#triggers.tekton.dev/v1beta1.EventListenerTemplate">
+EventListenerTemplate
 </a>
 </em>
 </td>
@@ -3436,8 +3607,8 @@ string
 <td>
 <code>interceptors</code><br/>
 <em>
-<a href="#triggers.tekton.dev/v1beta1.TriggerInterceptor">
-[]TriggerInterceptor
+<a href="#triggers.tekton.dev/v1beta1.EventInterceptor">
+[]EventInterceptor
 </a>
 </em>
 </td>
@@ -3845,6 +4016,16 @@ Kubernetes core/v1.ServiceType
 <code>servicePort</code><br/>
 <em>
 int32
+</em>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<code>serviceLoadBalancerClass</code><br/>
+<em>
+string
 </em>
 </td>
 <td>
@@ -4269,7 +4450,7 @@ string
 <h3 id="triggers.tekton.dev/v1beta1.TriggerInterceptor">TriggerInterceptor
 </h3>
 <p>
-(<em>Appears on:</em><a href="#triggers.tekton.dev/v1beta1.EventListenerTrigger">EventListenerTrigger</a>, <a href="#triggers.tekton.dev/v1beta1.EventListenerTriggerGroup">EventListenerTriggerGroup</a>, <a href="#triggers.tekton.dev/v1beta1.TriggerSpec">TriggerSpec</a>)
+(<em>Appears on:</em><a href="#triggers.tekton.dev/v1beta1.EventListenerTriggerGroup">EventListenerTriggerGroup</a>, <a href="#triggers.tekton.dev/v1beta1.TriggerSpec">TriggerSpec</a>)
 </p>
 <div>
 <p>TriggerInterceptor provides a hook to intercept and pre-process events</p>
@@ -4449,7 +4630,7 @@ as the Trigger itself</p>
 <h3 id="triggers.tekton.dev/v1beta1.TriggerSpecBinding">TriggerSpecBinding
 </h3>
 <p>
-(<em>Appears on:</em><a href="#triggers.tekton.dev/v1beta1.EventListenerTrigger">EventListenerTrigger</a>, <a href="#triggers.tekton.dev/v1beta1.TriggerSpec">TriggerSpec</a>)
+(<em>Appears on:</em><a href="#triggers.tekton.dev/v1beta1.TriggerSpec">TriggerSpec</a>)
 </p>
 <div>
 </div>
@@ -4527,7 +4708,7 @@ string
 <h3 id="triggers.tekton.dev/v1beta1.TriggerSpecTemplate">TriggerSpecTemplate
 </h3>
 <p>
-(<em>Appears on:</em><a href="#triggers.tekton.dev/v1beta1.EventListenerTrigger">EventListenerTrigger</a>, <a href="#triggers.tekton.dev/v1beta1.TriggerSpec">TriggerSpec</a>)
+(<em>Appears on:</em><a href="#triggers.tekton.dev/v1beta1.TriggerSpec">TriggerSpec</a>)
 </p>
 <div>
 </div>
@@ -4577,95 +4758,10 @@ TriggerTemplateSpec
 </tr>
 </tbody>
 </table>
-<h3 id="triggers.tekton.dev/v1beta1.TriggerTemplate">TriggerTemplate
-</h3>
-<div>
-<p>TriggerTemplate takes parameters and uses them to create CRDs</p>
-</div>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<code>metadata</code><br/>
-<em>
-<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#objectmeta-v1-meta">
-Kubernetes meta/v1.ObjectMeta
-</a>
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-Refer to the Kubernetes API documentation for the fields of the
-<code>metadata</code> field.
-</td>
-</tr>
-<tr>
-<td>
-<code>spec</code><br/>
-<em>
-<a href="#triggers.tekton.dev/v1beta1.TriggerTemplateSpec">
-TriggerTemplateSpec
-</a>
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>Spec holds the desired state of the TriggerTemplate from the client</p>
-<br/>
-<br/>
-<table>
-<tr>
-<td>
-<code>params</code><br/>
-<em>
-<a href="#triggers.tekton.dev/v1beta1.ParamSpec">
-[]ParamSpec
-</a>
-</em>
-</td>
-<td>
-</td>
-</tr>
-<tr>
-<td>
-<code>resourcetemplates</code><br/>
-<em>
-<a href="#triggers.tekton.dev/v1beta1.TriggerResourceTemplate">
-[]TriggerResourceTemplate
-</a>
-</em>
-</td>
-<td>
-</td>
-</tr>
-</table>
-</td>
-</tr>
-<tr>
-<td>
-<code>status</code><br/>
-<em>
-<a href="#triggers.tekton.dev/v1beta1.TriggerTemplateStatus">
-TriggerTemplateStatus
-</a>
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-</td>
-</tr>
-</tbody>
-</table>
 <h3 id="triggers.tekton.dev/v1beta1.TriggerTemplateSpec">TriggerTemplateSpec
 </h3>
 <p>
-(<em>Appears on:</em><a href="#triggers.tekton.dev/v1beta1.TriggerSpecTemplate">TriggerSpecTemplate</a>, <a href="#triggers.tekton.dev/v1beta1.TriggerTemplate">TriggerTemplate</a>)
+(<em>Appears on:</em><a href="#triggers.tekton.dev/v1beta1.TriggerTemplate">TriggerTemplate</a>, <a href="#triggers.tekton.dev/v1beta1.TriggerSpecTemplate">TriggerSpecTemplate</a>)
 </p>
 <div>
 <p>TriggerTemplateSpec holds the desired state of TriggerTemplate</p>
