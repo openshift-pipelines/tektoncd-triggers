@@ -105,7 +105,7 @@ func TestServer_ServeHTTP(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Failed to marshal errors")
 			}
-			req := httptest.NewRequest(http.MethodPost, fmt.Sprintf("http://example.com%s", tc.path), bytes.NewBuffer(body))
+			req := httptest.NewRequest("POST", fmt.Sprintf("http://example.com%s", tc.path), bytes.NewBuffer(body))
 			w := httptest.NewRecorder()
 			server.ServeHTTP(w, req)
 			resp := w.Result()
@@ -127,6 +127,7 @@ func TestServer_ServeHTTP(t *testing.T) {
 			}
 		})
 	}
+
 }
 
 // Tests unexpected error cases where interceptor processing does not happen.
@@ -163,7 +164,7 @@ func TestServer_ServeHTTP_Error(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Failed to marshal errors ")
 			}
-			req := httptest.NewRequest(http.MethodPost, fmt.Sprintf("http://example.com%s", tc.path), bytes.NewBuffer(body))
+			req := httptest.NewRequest("POST", fmt.Sprintf("http://example.com%s", tc.path), bytes.NewBuffer(body))
 			w := httptest.NewRecorder()
 			server.ServeHTTP(w, req)
 			resp := w.Result()
@@ -416,8 +417,7 @@ func Test_UpdateCACertToClusterInterceptorCRD(t *testing.T) {
 		t.Error(err)
 	}
 
-	stopFunc := UpdateCACertToClusterInterceptorCRD(ctx, server, faketriggersclient.Get(ctx).TriggersV1alpha1(), logger.Sugar(), time.Second)
-	defer stopFunc()
+	UpdateCACertToClusterInterceptorCRD(ctx, server, faketriggersclient.Get(ctx).TriggersV1alpha1(), logger.Sugar(), time.Second)
 
 	time.Sleep(10 * time.Second)
 	ciNew, err := faketriggersclient.Get(ctx).TriggersV1alpha1().ClusterInterceptors().Get(ctx, "firstci1", metav1.GetOptions{})
