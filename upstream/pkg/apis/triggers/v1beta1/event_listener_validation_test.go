@@ -52,7 +52,7 @@ func Test_EventListenerValidate(t *testing.T) {
 	tests := []struct {
 		name    string
 		el      *triggersv1beta1.EventListener
-		ctx     context.Context
+		ctx     context.Context //nolint:containedctx
 		wantErr *apis.FieldError
 	}{{
 		name: "TriggerTemplate Does Not Exist",
@@ -443,6 +443,22 @@ func Test_EventListenerValidate(t *testing.T) {
 			},
 		},
 	}, {
+		name: "Valid EventListener with loadBalancerClass",
+		el: &triggersv1beta1.EventListener{
+			ObjectMeta: myObjectMeta,
+			Spec: triggersv1beta1.EventListenerSpec{
+				Triggers: []triggersv1beta1.EventListenerTrigger{{
+					TriggerRef: "triggerref",
+				}},
+				Resources: triggersv1beta1.Resources{
+					KubernetesResource: &triggersv1beta1.KubernetesResource{
+						ServiceType:              corev1.ServiceTypeLoadBalancer,
+						ServiceLoadBalancerClass: ptr.String("lbc"),
+					},
+				},
+			},
+		},
+	}, {
 		name: "valid EventListener with embedded TriggerTemplate",
 		ctx:  ctxWithAlphaFieldsEnabled,
 		el: &triggersv1beta1.EventListener{
@@ -571,6 +587,48 @@ func Test_EventListenerValidate(t *testing.T) {
 					},
 				},
 			},
+		}, {
+			name: "Valid EventListener with kubernetes resources for securityContext",
+			el: &triggersv1beta1.EventListener{
+				ObjectMeta: myObjectMeta,
+				Spec: triggersv1beta1.EventListenerSpec{
+					Triggers: []triggersv1beta1.EventListenerTrigger{{
+						Template: &triggersv1beta1.EventListenerTemplate{
+							Ref: ptr.String("tt"),
+						},
+					}},
+					Resources: triggersv1beta1.Resources{
+						KubernetesResource: &triggersv1beta1.KubernetesResource{
+							WithPodSpec: duckv1.WithPodSpec{
+								Template: duckv1.PodSpecable{
+									Spec: corev1.PodSpec{
+										ServiceAccountName: "k8sresource",
+										SecurityContext: &corev1.PodSecurityContext{
+											RunAsNonRoot: ptr.Bool(true),
+										},
+										Containers: []corev1.Container{{
+											Resources: corev1.ResourceRequirements{
+												Limits: corev1.ResourceList{
+													corev1.ResourceCPU:    resource.Quantity{Format: resource.DecimalSI},
+													corev1.ResourceMemory: resource.Quantity{Format: resource.BinarySI},
+												},
+												Requests: corev1.ResourceList{
+													corev1.ResourceCPU:    resource.Quantity{Format: resource.DecimalSI},
+													corev1.ResourceMemory: resource.Quantity{Format: resource.BinarySI},
+												},
+											},
+											SecurityContext: &corev1.SecurityContext{
+												RunAsNonRoot: ptr.Bool(true),
+												RunAsUser:    ptr.Int64(65532),
+											},
+										}},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 		}}
 
 	for _, tc := range tests {
@@ -598,7 +656,7 @@ func TestEventListenerValidate_error(t *testing.T) {
 	tests := []struct {
 		name    string
 		el      *triggersv1beta1.EventListener
-		ctx     context.Context
+		ctx     context.Context //nolint:containedctx
 		wantErr *apis.FieldError
 	}{{
 		name: "Invalid EventListener name",
@@ -1210,6 +1268,26 @@ func TestEventListenerValidate_error(t *testing.T) {
 			},
 		},
 		wantErr: apis.ErrMultipleOneOf("spec.resources.customResource", "spec.resources.kubernetesResource"),
+	}, {
+		name: "user specify a loadbalancerclass for a non-lb service type",
+		el: &triggersv1beta1.EventListener{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "name",
+				Namespace: "namespace",
+			},
+			Spec: triggersv1beta1.EventListenerSpec{
+				Triggers: []triggersv1beta1.EventListenerTrigger{{
+					TriggerRef: "triggerref",
+				}},
+				Resources: triggersv1beta1.Resources{
+					KubernetesResource: &triggersv1beta1.KubernetesResource{
+						ServiceType:              corev1.ServiceTypeNodePort,
+						ServiceLoadBalancerClass: ptr.String("sentinel"),
+					},
+				},
+			},
+		},
+		wantErr: apis.ErrInvalidValue("sentinel", "spec.resources.kubernetesResource.serviceLoadBalancerClass", "ServiceLoadBalancerClass is only needed for LoadBalancer service type"),
 	}, {
 		name: "user specify multiple containers, unsupported podspec and container field in custom resources",
 		el: &triggersv1beta1.EventListener{

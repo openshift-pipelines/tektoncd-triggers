@@ -66,10 +66,7 @@ func (s String) Compare(other ref.Val) ref.Val {
 func (s String) ConvertToNative(typeDesc reflect.Type) (any, error) {
 	switch typeDesc.Kind() {
 	case reflect.String:
-		if reflect.TypeOf(s).AssignableTo(typeDesc) {
-			return s, nil
-		}
-		return s.Value(), nil
+		return reflect.ValueOf(s).Convert(typeDesc).Interface(), nil
 	case reflect.Ptr:
 		switch typeDesc {
 		case anyValueType:
@@ -187,6 +184,10 @@ func (s String) Type() ref.Type {
 // Value implements ref.Val.Value.
 func (s String) Value() any {
 	return string(s)
+}
+
+func (s String) format(sb *strings.Builder) {
+	sb.WriteString(strconv.Quote(string(s)))
 }
 
 // StringContains returns whether the string contains a substring.
