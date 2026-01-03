@@ -45,6 +45,7 @@ func NewAdmissionController(
 	disallowUnknownFields bool,
 	callbacks ...map[schema.GroupVersionKind]Callback,
 ) *controller.Impl {
+
 	// This not ideal, we are using a variadic argument to effectively make callbacks optional
 	// This allows this addition to be non-breaking to consumers of /pkg
 	// TODO: once all sub-repos have adopted this, we might move this back to a traditional param.
@@ -84,12 +85,6 @@ func newController(ctx context.Context, name string, optsFunc ...OptionFunc) *co
 		f(opts)
 	}
 
-	// if this environment variable is set, it overrides the value in the Options
-	disableNamespaceOwnership := webhook.DisableNamespaceOwnershipFromEnv()
-	if disableNamespaceOwnership != nil {
-		wopts.DisableNamespaceOwnership = *disableNamespaceOwnership
-	}
-
 	key := types.NamespacedName{Name: name}
 
 	wh := &reconciler{
@@ -106,10 +101,9 @@ func newController(ctx context.Context, name string, optsFunc ...OptionFunc) *co
 		handlers:  opts.types,
 		callbacks: opts.callbacks,
 
-		withContext:               opts.wc,
-		disallowUnknownFields:     opts.disallowUnknownFields,
-		secretName:                wopts.SecretName,
-		disableNamespaceOwnership: wopts.DisableNamespaceOwnership,
+		withContext:           opts.wc,
+		disallowUnknownFields: opts.disallowUnknownFields,
+		secretName:            wopts.SecretName,
 
 		client:       client,
 		mwhlister:    mwhInformer.Lister(),
