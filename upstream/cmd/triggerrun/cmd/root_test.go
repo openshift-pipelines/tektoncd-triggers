@@ -78,6 +78,7 @@ func TestReadTrigger(t *testing.T) {
 	if diff := cmp.Diff(want, tri); diff != "" {
 		t.Errorf("-want +got: %s", diff)
 	}
+
 }
 
 func TestReadHTTP(t *testing.T) {
