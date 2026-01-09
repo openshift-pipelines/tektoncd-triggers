@@ -83,7 +83,7 @@ type Recorder struct {
 var (
 	once        sync.Once
 	r           *Recorder
-	recorderErr error //nolint:errname
+	recorderErr error
 )
 
 // revive:disable:unused-parameter
@@ -149,6 +149,7 @@ func viewRegister() error {
 }
 
 func (r *Recorder) ReportCountMetrics(ctx context.Context, li listers) {
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -199,6 +200,7 @@ func (r *Recorder) CountMetrics(ctx context.Context, li listers) {
 		count := len(tt)
 		r.countMetrics(ctx, float64(count), ttCount)
 	}
+
 }
 
 func (r *Recorder) countMetrics(ctx context.Context, count float64, measure *stats.Float64Measure) {
