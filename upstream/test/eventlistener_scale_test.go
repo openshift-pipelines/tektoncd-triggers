@@ -78,7 +78,7 @@ func TestEventListenerScale(t *testing.T) {
 			},
 		},
 	}
-	for i := range 1000 {
+	for i := 0; i < 1000; i++ {
 		trigger := triggersv1.EventListenerTrigger{
 			Bindings: []*triggersv1.EventListenerBinding{{
 				Kind:       triggersv1.NamespacedTriggerBindingKind,
