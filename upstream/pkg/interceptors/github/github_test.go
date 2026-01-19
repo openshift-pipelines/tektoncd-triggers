@@ -36,6 +36,7 @@ func TestInterceptor_ExecuteTrigger_Signature(t *testing.T) {
 		emptyJSONBody = json.RawMessage(`{}`)
 		secretToken   = "secret"
 	)
+	emptyBodySha1Header := map[string][]string{"X-Hub-Signature": {test.HMACHeader(t, secretToken, emptyJSONBody, "sha1")}}
 	emptyBodySha256Header := map[string][]string{"X-Hub-Signature-256": {test.HMACHeader(t, secretToken, emptyJSONBody, "sha256")}}
 
 	tests := []struct {
@@ -49,7 +50,7 @@ func TestInterceptor_ExecuteTrigger_Signature(t *testing.T) {
 		name:              "no secret",
 		interceptorParams: &InterceptorParams{},
 		payload:           emptyJSONBody,
-		headers:           map[string][]string{"X-Hub-Signature-256": {"foo"}},
+		headers:           map[string][]string{"X-Hub-Signature": {"foo"}},
 	}, {
 		name: "valid header for secret",
 		interceptorParams: &InterceptorParams{
@@ -58,7 +59,7 @@ func TestInterceptor_ExecuteTrigger_Signature(t *testing.T) {
 				SecretKey:  "token",
 			},
 		},
-		headers: emptyBodySha256Header,
+		headers: emptyBodySha1Header,
 		secret: &corev1.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: "mysecret",
@@ -104,7 +105,7 @@ func TestInterceptor_ExecuteTrigger_Signature(t *testing.T) {
 			EventTypes: []string{"MY_EVENT", "YOUR_EVENT"},
 		},
 
-		headers: emptyBodySha256Header,
+		headers: emptyBodySha1Header,
 		secret: &corev1.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: "mysecret",
@@ -119,7 +120,7 @@ func TestInterceptor_ExecuteTrigger_Signature(t *testing.T) {
 		name:              "nil body does not panic",
 		interceptorParams: &InterceptorParams{},
 		payload:           nil,
-		headers:           map[string][]string{"X-Hub-Signature-256": {"foo"}},
+		headers:           map[string][]string{"X-Hub-Signature": {"foo"}},
 	}}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -169,7 +170,7 @@ func TestInterceptor_ExecuteTrigger_ShouldNotContinue(t *testing.T) {
 		emptyJSONBody = json.RawMessage(`{}`)
 		secretToken   = "secret"
 	)
-	emptyBodyHMACSignature := test.HMACHeader(t, secretToken, emptyJSONBody, "sha256")
+	emptyBodyHMACSignature := test.HMACHeader(t, secretToken, emptyJSONBody, "sha1")
 
 	tests := []struct {
 		name              string
@@ -302,7 +303,7 @@ func TestInterceptor_ExecuteTrigger_ShouldNotContinue(t *testing.T) {
 				req.Header["X-GITHUB-EVENT"] = []string{tt.eventType}
 			}
 			if tt.signature != "" {
-				req.Header["X-Hub-Signature-256"] = []string{tt.signature}
+				req.Header["X-Hub-Signature"] = []string{tt.signature}
 			}
 
 			clientset := fakekubeclient.Get(ctx)
@@ -328,8 +329,8 @@ func TestInterceptor_ExecuteTrigger_with_invalid_content_type(t *testing.T) {
 	req := &triggersv1.InterceptorRequest{
 		Body: `{}`,
 		Header: http.Header{
-			"Content-Type":        []string{"application/x-www-form-urlencoded"},
-			"X-Hub-Signature-256": []string{"foo"},
+			"Content-Type":    []string{"application/x-www-form-urlencoded"},
+			"X-Hub-Signature": []string{"foo"},
 		},
 		InterceptorParams: map[string]interface{}{},
 		Context: &triggersv1.TriggerContext{
@@ -394,7 +395,7 @@ func TestInterceptor_ExecuteTrigger_Changed_Files_Pull_Request(t *testing.T) {
 			githubServerReply: `[{"filename":"terraform/envs/dev/main.tf"},{"filename":"terraform/envs/prod/main.tf"},{"filename":"terraform/envs/qa/main.tf"}]`,
 			interceptorRequest: &triggersv1.InterceptorRequest{
 				Body:   `{"action":"opened","number":1,"pull_request":{"head":{"sha":"28911bbb5"}},"repository":{"full_name":"testowner/testrepo","clone_url":"https://github.com/testowner/testrepo.git"}}`,
-				Header: map[string][]string{"X-Hub-Signature-256": {"foo"}, "X-GitHub-Event": {"pull_request"}},
+				Header: map[string][]string{"X-Hub-Signature": {"foo"}, "X-GitHub-Event": {"pull_request"}},
 				Context: &triggersv1.TriggerContext{
 					EventURL:  "https://testing.example.com",
 					EventID:   "abcde",
@@ -428,7 +429,7 @@ func TestInterceptor_ExecuteTrigger_Changed_Files_Pull_Request(t *testing.T) {
 			githubServerReply: `[{"filename":"terraform/envs/dev/main.tf"},{"filename":"terraform/envs/prod/main.tf"},{"filename":"terraform/envs/qa/main.tf"}]`,
 			interceptorRequest: &triggersv1.InterceptorRequest{
 				Body:   "",
-				Header: map[string][]string{"X-Hub-Signature-256": {"foo"}, "X-GitHub-Event": {"pull_request"}},
+				Header: map[string][]string{"X-Hub-Signature": {"foo"}, "X-GitHub-Event": {"pull_request"}},
 				Context: &triggersv1.TriggerContext{
 					EventURL:  "https://testing.example.com",
 					EventID:   "abcde",
@@ -462,7 +463,7 @@ func TestInterceptor_ExecuteTrigger_Changed_Files_Pull_Request(t *testing.T) {
 			githubServerReply: `[{"filename":"terraform/envs/dev/main.tf"},{"filename":"terraform/envs/prod/main.tf"},{"filename":"terraform/envs/qa/main.tf"}]`,
 			interceptorRequest: &triggersv1.InterceptorRequest{
 				Body:   `this is not json`,
-				Header: map[string][]string{"X-Hub-Signature-256": {"foo"}, "X-GitHub-Event": {"pull_request"}},
+				Header: map[string][]string{"X-Hub-Signature": {"foo"}, "X-GitHub-Event": {"pull_request"}},
 				Context: &triggersv1.TriggerContext{
 					EventURL:  "https://testing.example.com",
 					EventID:   "abcde",
@@ -496,7 +497,7 @@ func TestInterceptor_ExecuteTrigger_Changed_Files_Pull_Request(t *testing.T) {
 			githubServerReply: `[{"filename":"terraform/envs/dev/main.tf"},{"filename":"terraform/envs/prod/main.tf"},{"filename":"terraform/envs/qa/main.tf"}]`,
 			interceptorRequest: &triggersv1.InterceptorRequest{
 				Body:   `{"action":"opened","pull_request":{"head":{"sha":"28911bbb5"}},"repository":{"full_name":"testowner/testrepo","clone_url":"https://github.com/testowner/testrepo.git"}}`,
-				Header: map[string][]string{"X-Hub-Signature-256": {"foo"}, "X-GitHub-Event": {"pull_request"}},
+				Header: map[string][]string{"X-Hub-Signature": {"foo"}, "X-GitHub-Event": {"pull_request"}},
 				Context: &triggersv1.TriggerContext{
 					EventURL:  "https://testing.example.com",
 					EventID:   "abcde",
@@ -530,7 +531,7 @@ func TestInterceptor_ExecuteTrigger_Changed_Files_Pull_Request(t *testing.T) {
 			githubServerReply: `[{"filename":"terraform/envs/dev/main.tf"},{"filename":"terraform/envs/prod/main.tf"},{"filename":"terraform/envs/qa/main.tf"}]`,
 			interceptorRequest: &triggersv1.InterceptorRequest{
 				Body:   `{"action":"opened","number":1,"pull_request":{"head":{"sha":"28911bbb5"}}}`,
-				Header: map[string][]string{"X-Hub-Signature-256": {"foo"}, "X-GitHub-Event": {"pull_request"}},
+				Header: map[string][]string{"X-Hub-Signature": {"foo"}, "X-GitHub-Event": {"pull_request"}},
 				Context: &triggersv1.TriggerContext{
 					EventURL:  "https://testing.example.com",
 					EventID:   "abcde",
@@ -564,7 +565,7 @@ func TestInterceptor_ExecuteTrigger_Changed_Files_Pull_Request(t *testing.T) {
 			githubServerReply: `[{"filename":"terraform/envs/dev/main.tf"},{"filename":"terraform/envs/prod/main.tf"},{"filename":"terraform/envs/qa/main.tf"}]`,
 			interceptorRequest: &triggersv1.InterceptorRequest{
 				Body:   `{"action":"opened","number":1,"pull_request":{"head":{"sha":"28911bbb5"}},"repository":{"clone_url":"https://github.com/testowner/testrepo.git"}}`,
-				Header: map[string][]string{"X-Hub-Signature-256": {"foo"}, "X-GitHub-Event": {"pull_request"}},
+				Header: map[string][]string{"X-Hub-Signature": {"foo"}, "X-GitHub-Event": {"pull_request"}},
 				Context: &triggersv1.TriggerContext{
 					EventURL:  "https://testing.example.com",
 					EventID:   "abcde",
@@ -598,7 +599,7 @@ func TestInterceptor_ExecuteTrigger_Changed_Files_Pull_Request(t *testing.T) {
 			githubServerReply: `[{"filename":"terraform/envs/dev/main.tf"},{"filename":"terraform/envs/prod/main.tf"},{"filename":"terraform/envs/qa/main.tf"}]`,
 			interceptorRequest: &triggersv1.InterceptorRequest{
 				Body:   `{"action":"opened","number":1,"pull_request":{"head":{"sha":"28911bbb5"}},"repository":{"clone_url":"https://github.com/testowner/testrepo.git"}}`,
-				Header: map[string][]string{"X-Hub-Signature-256": {"foo"}, "X-GitHub-Event": {"nothing"}},
+				Header: map[string][]string{"X-Hub-Signature": {"foo"}, "X-GitHub-Event": {"nothing"}},
 				Context: &triggersv1.TriggerContext{
 					EventURL:  "https://testing.example.com",
 					EventID:   "abcde",
@@ -682,7 +683,7 @@ func TestInterceptor_ExecuteTrigger_Changed_Files_Push(t *testing.T) {
 			githubServerReply: `[{"filename":"terraform/envs/dev/main.tf"},{"filename":"terraform/envs/prod/main.tf"},{"filename":"terraform/envs/qa/main.tf"}]`,
 			interceptorRequest: &triggersv1.InterceptorRequest{
 				Body:   `{"repository":{"full_name":"testowner/testrepo","clone_url":"https://github.com/testowner/testrepo.git"},"commits":[{"added":["api/v1beta1/tektonhelperconfig_types.go","config/crd/bases/tekton-helper..com_tektonhelperconfigs.yaml"],"removed":["config/samples/tektonhelperconfig-oomkillpipeline.yaml","config/samples/tektonhelperconfig-timeout.yaml"],"modified":["controllers/tektonhelperconfig_controller.go"]}]}`,
-				Header: map[string][]string{"X-Hub-Signature-256": {"foo"}, "X-GitHub-Event": {"push"}},
+				Header: map[string][]string{"X-Hub-Signature": {"foo"}, "X-GitHub-Event": {"push"}},
 				Context: &triggersv1.TriggerContext{
 					EventURL:  "https://testing.example.com",
 					EventID:   "abcde",
@@ -716,7 +717,7 @@ func TestInterceptor_ExecuteTrigger_Changed_Files_Push(t *testing.T) {
 			githubServerReply: `[{"filename":"terraform/envs/dev/main.tf"},{"filename":"terraform/envs/prod/main.tf"},{"filename":"terraform/envs/qa/main.tf"}]`,
 			interceptorRequest: &triggersv1.InterceptorRequest{
 				Body:   `{"repository":{"full_name":"testowner/testrepo","clone_url":"https://github.com/testowner/testrepo.git"},"commits":[{"removed":["config/samples/tektonhelperconfig-oomkillpipeline.yaml","config/samples/tektonhelperconfig-timeout.yaml"],"modified":["controllers/tektonhelperconfig_controller.go"]}]}`,
-				Header: map[string][]string{"X-Hub-Signature-256": {"foo"}, "X-GitHub-Event": {"push"}},
+				Header: map[string][]string{"X-Hub-Signature": {"foo"}, "X-GitHub-Event": {"push"}},
 				Context: &triggersv1.TriggerContext{
 					EventURL:  "https://testing.example.com",
 					EventID:   "abcde",
@@ -750,7 +751,7 @@ func TestInterceptor_ExecuteTrigger_Changed_Files_Push(t *testing.T) {
 			githubServerReply: `[{"filename":"terraform/envs/dev/main.tf"},{"filename":"terraform/envs/prod/main.tf"},{"filename":"terraform/envs/qa/main.tf"}]`,
 			interceptorRequest: &triggersv1.InterceptorRequest{
 				Body:   `{"repository":{"full_name":"testowner/testrepo","clone_url":"https://github.com/testowner/testrepo.git"},"commits":[{"added":["api/v1beta1/tektonhelperconfig_types.go","config/crd/bases/tekton-helper..com_tektonhelperconfigs.yaml"],"modified":["controllers/tektonhelperconfig_controller.go"]}]}`,
-				Header: map[string][]string{"X-Hub-Signature-256": {"foo"}, "X-GitHub-Event": {"push"}},
+				Header: map[string][]string{"X-Hub-Signature": {"foo"}, "X-GitHub-Event": {"push"}},
 				Context: &triggersv1.TriggerContext{
 					EventURL:  "https://testing.example.com",
 					EventID:   "abcde",
@@ -784,7 +785,7 @@ func TestInterceptor_ExecuteTrigger_Changed_Files_Push(t *testing.T) {
 			githubServerReply: `[{"filename":"terraform/envs/dev/main.tf"},{"filename":"terraform/envs/prod/main.tf"},{"filename":"terraform/envs/qa/main.tf"}]`,
 			interceptorRequest: &triggersv1.InterceptorRequest{
 				Body:   `{"repository":{"full_name":"testowner/testrepo","clone_url":"https://github.com/testowner/testrepo.git"},"commits":[{"added":["api/v1beta1/tektonhelperconfig_types.go","config/crd/bases/tekton-helper..com_tektonhelperconfigs.yaml"],"removed":["config/samples/tektonhelperconfig-oomkillpipeline.yaml","config/samples/tektonhelperconfig-timeout.yaml"]}]}`,
-				Header: map[string][]string{"X-Hub-Signature-256": {"foo"}, "X-GitHub-Event": {"push"}},
+				Header: map[string][]string{"X-Hub-Signature": {"foo"}, "X-GitHub-Event": {"push"}},
 				Context: &triggersv1.TriggerContext{
 					EventURL:  "https://testing.example.com",
 					EventID:   "abcde",
@@ -818,7 +819,7 @@ func TestInterceptor_ExecuteTrigger_Changed_Files_Push(t *testing.T) {
 			githubServerReply: `[{"filename":"terraform/envs/dev/main.tf"},{"filename":"terraform/envs/prod/main.tf"},{"filename":"terraform/envs/qa/main.tf"}]`,
 			interceptorRequest: &triggersv1.InterceptorRequest{
 				Body:   `{"repository":{"full_name":"testowner/testrepo","clone_url":"https://github.com/testowner/testrepo.git"},"commits":[{"added":["api/v1beta1/tektonhelperconfig_types.go","config/crd/bases/tekton-helper..com_tektonhelperconfigs.yaml"],"removed":["config/samples/tektonhelperconfig-oomkillpipeline.yaml","config/samples/tektonhelperconfig-timeout.yaml"]}]}`,
-				Header: map[string][]string{"X-Hub-Signature-256": {"foo"}, "X-GitHub-Event": {"push"}},
+				Header: map[string][]string{"X-Hub-Signature": {"foo"}, "X-GitHub-Event": {"push"}},
 				InterceptorParams: map[string]interface{}{
 					"eventTypes": []string{"pull_request", "push"},
 					"secretRef": &triggersv1.SecretRef{
@@ -851,7 +852,7 @@ func TestInterceptor_ExecuteTrigger_Changed_Files_Push(t *testing.T) {
 			githubServerReply: `[{"filename":"terraform/envs/dev/main.tf"},{"filename":"terraform/envs/prod/main.tf"},{"filename":"terraform/envs/qa/main.tf"}]`,
 			interceptorRequest: &triggersv1.InterceptorRequest{
 				Body:   `{"repository":{"full_name":"testowner/testrepo","clone_url":"https://github.com/testowner/testrepo.git"},"commits":[{"added":["api/v1beta1/tektonhelperconfig_types.go","config/crd/bases/tekton-helper..com_tektonhelperconfigs.yaml"],"removed":["config/samples/tektonhelperconfig-oomkillpipeline.yaml","config/samples/tektonhelperconfig-timeout.yaml"]}]}`,
-				Header: map[string][]string{"X-Hub-Signature-256": {"foo"}, "X-GitHub-Event": {"push"}},
+				Header: map[string][]string{"X-Hub-Signature": {"foo"}, "X-GitHub-Event": {"push"}},
 				InterceptorParams: map[string]interface{}{
 					"eventTypes": []string{"pull_request", "push"},
 					"addChangedFiles": &AddChangedFiles{
@@ -880,7 +881,7 @@ func TestInterceptor_ExecuteTrigger_Changed_Files_Push(t *testing.T) {
 			githubServerReply: `[{"filename":"terraform/envs/dev/main.tf"},{"filename":"terraform/envs/prod/main.tf"},{"filename":"terraform/envs/qa/main.tf"}]`,
 			interceptorRequest: &triggersv1.InterceptorRequest{
 				Body:   `{"repository":{"full_name":"testowner/testrepo","clone_url":"https://github.com/testowner/testrepo.git"},"commits":[{"added":["api/v1beta1/tektonhelperconfig_types.go","config/crd/bases/tekton-helper..com_tektonhelperconfigs.yaml"],"removed":["config/samples/tektonhelperconfig-oomkillpipeline.yaml","config/samples/tektonhelperconfig-timeout.yaml"],"modified":["controllers/tektonhelperconfig_controller.go"]}]}`,
-				Header: map[string][]string{"X-Hub-Signature-256": {"foo"}, "X-GitHub-Event": {"push"}},
+				Header: map[string][]string{"X-Hub-Signature": {"foo"}, "X-GitHub-Event": {"push"}},
 				Context: &triggersv1.TriggerContext{
 					EventURL:  "https://testing.example.com",
 					EventID:   "abcde",
@@ -949,11 +950,12 @@ func TestInterceptor_ExecuteTrigger_Changed_Files_Push(t *testing.T) {
 }
 
 func Test_getGithubTokenSecret(t *testing.T) {
+
 	ctx, _ := test.SetupFakeContext(t)
 	var secretToken = "secret"
 
 	type args struct {
-		ctx context.Context //nolint:containedctx
+		ctx context.Context
 		r   *triggersv1.InterceptorRequest
 		p   InterceptorParams
 	}
@@ -1057,6 +1059,7 @@ func Test_getGithubTokenSecret(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+
 			clientset := fakekubeclient.Get(ctx)
 			if tt.secret != nil {
 				tt.secret.Namespace = metav1.NamespaceDefault
@@ -1082,7 +1085,7 @@ func Test_getGithubTokenSecret(t *testing.T) {
 func Test_makeClient(t *testing.T) {
 	ctx, _ := test.SetupFakeContext(t)
 	type args struct {
-		ctx               context.Context //nolint:containedctx
+		ctx               context.Context
 		enterpriseBaseURL string
 		token             string
 	}
@@ -1122,16 +1125,18 @@ func Test_makeClient(t *testing.T) {
 			if got.BaseURL.Host != tt.want {
 				t.Errorf("makeClient() = %v, want %v", got.BaseURL.Host, tt.want)
 			}
+
 		})
 	}
 }
 
 func Test_getPersonalAccessTokenSecret(t *testing.T) {
+
 	ctx, _ := test.SetupFakeContext(t)
 	var secretToken = "secret"
 
 	type args struct {
-		ctx context.Context //nolint:containedctx
+		ctx context.Context
 		r   *triggersv1.InterceptorRequest
 		p   InterceptorParams
 	}
@@ -1236,6 +1241,7 @@ func Test_getPersonalAccessTokenSecret(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+
 			clientset := fakekubeclient.Get(ctx)
 			if tt.secret != nil {
 				tt.secret.Namespace = metav1.NamespaceDefault
@@ -1277,7 +1283,7 @@ func TestInterceptor_ExecuteTrigger_owners(t *testing.T) {
 			ownersFileReply: `{"type": "file","encoding": "base64","content": "YXBwcm92ZXJzOg0KLSB0ZXN0X293bmVy"}`,
 			interceptorRequest: &triggersv1.InterceptorRequest{
 				Body:   `{"action": "created", "issue": {"number": 1}, "comment": {"body": "/ok-to-test"}, "repository": {"full_name": "owner/repo"}, "sender": {"login": "test_owner"}}`,
-				Header: map[string][]string{"X-Hub-Signature-256": {"foo"}, "X-GitHub-Event": {"issue_comment"}},
+				Header: map[string][]string{"X-Hub-Signature": {"foo"}, "X-GitHub-Event": {"issue_comment"}},
 				InterceptorParams: map[string]interface{}{
 					"eventTypes": []string{"pull_request", "issue_comment"},
 					"githubOwners": &Owners{
@@ -1312,7 +1318,7 @@ func TestInterceptor_ExecuteTrigger_owners(t *testing.T) {
 			collaboratorsReply: `[{"login": "test_owner"}]`,
 			interceptorRequest: &triggersv1.InterceptorRequest{
 				Body:   `{"action": "created", "issue": {"number": 1}, "comment": {"body": "/ok-to-test"}, "repository": {"full_name": "owner/repo"}, "sender": {"login": "test_owner"}}`,
-				Header: map[string][]string{"X-Hub-Signature-256": {"foo"}, "X-GitHub-Event": {"issue_comment"}},
+				Header: map[string][]string{"X-Hub-Signature": {"foo"}, "X-GitHub-Event": {"issue_comment"}},
 				InterceptorParams: map[string]interface{}{
 					"eventTypes": []string{"pull_request", "issue_comment"},
 					"githubOwners": &Owners{
@@ -1344,7 +1350,7 @@ func TestInterceptor_ExecuteTrigger_owners(t *testing.T) {
 			collaboratorsReply: `[{"login": "test_owner"}]`,
 			interceptorRequest: &triggersv1.InterceptorRequest{
 				Body:   `{"action": "created", "issue": {"number": 1}, "comment": {"body": "/ok-to-test"}, "repository": {"full_name": "owner/repo"}, "sender": {"login": "test_owner"}}`,
-				Header: map[string][]string{"X-Hub-Signature-256": {"foo"}, "X-GitHub-Event": {"issue_comment"}},
+				Header: map[string][]string{"X-Hub-Signature": {"foo"}, "X-GitHub-Event": {"issue_comment"}},
 				InterceptorParams: map[string]interface{}{
 					"eventTypes": []string{"pull_request", "issue_comment"},
 					"githubOwners": &Owners{
@@ -1379,7 +1385,7 @@ func TestInterceptor_ExecuteTrigger_owners(t *testing.T) {
 			collaboratorsReply: `[{"login": "test_owner"}]`,
 			interceptorRequest: &triggersv1.InterceptorRequest{
 				Body:   `{"action": "opened", "number": 1, "repository":{"full_name": "owner/repo", "clone_url": "https://github.com/owner/repo.git"}, "sender":{"login": "test_owner"}}`,
-				Header: map[string][]string{"X-Hub-Signature-256": {"foo"}, "X-GitHub-Event": {"pull_request"}},
+				Header: map[string][]string{"X-Hub-Signature": {"foo"}, "X-GitHub-Event": {"pull_request"}},
 				InterceptorParams: map[string]interface{}{
 					"eventTypes": []string{"pull_request", "issue_comment"},
 					"githubOwners": &Owners{
@@ -1413,7 +1419,7 @@ func TestInterceptor_ExecuteTrigger_owners(t *testing.T) {
 			ownersFileReply: `{"type": "file","encoding": "base64","content": "YXBwcm92ZXJzOg0KLSB0ZXN0X293bmVy"}`,
 			interceptorRequest: &triggersv1.InterceptorRequest{
 				Body:   `{"action": "created", "issue": {"number": 1}, "comment": {"body": "/ok-to-test"}, "repository": {"full_name": "owner/repo"}, "sender": {"login": "nonowner"}}`,
-				Header: map[string][]string{"X-Hub-Signature-256": {"foo"}, "X-GitHub-Event": {"issue_comment"}},
+				Header: map[string][]string{"X-Hub-Signature": {"foo"}, "X-GitHub-Event": {"issue_comment"}},
 				InterceptorParams: map[string]interface{}{
 					"eventTypes": []string{"pull_request", "issue_comment"},
 					"githubOwners": &Owners{
@@ -1445,7 +1451,7 @@ func TestInterceptor_ExecuteTrigger_owners(t *testing.T) {
 			ownersFileReply:   `{"type": "file","encoding": "base64","content": "YXBwcm92ZXJzOg0KLSB0ZXN0X293bmVy"}`,
 			interceptorRequest: &triggersv1.InterceptorRequest{
 				Body:   `{"action": "created", "issue": {"number": 1}, "comment": {"body": "/ok-to-test"}, "repository": {"full_name": "owner/repo"}, "sender": {"login": "test_owner"}}`,
-				Header: map[string][]string{"X-Hub-Signature-256": {"foo"}, "X-GitHub-Event": {"issue_comment"}},
+				Header: map[string][]string{"X-Hub-Signature": {"foo"}, "X-GitHub-Event": {"issue_comment"}},
 				InterceptorParams: map[string]interface{}{
 					"eventTypes": []string{"pull_request", "issue_comment"},
 					"githubOwners": &Owners{
@@ -1476,7 +1482,7 @@ func TestInterceptor_ExecuteTrigger_owners(t *testing.T) {
 			ownersFileReply:   `{"type": "file","encoding": "base64","content": "YXBwcm92ZXJzOg0KLSB0ZXN0X293bmVy"}`,
 			interceptorRequest: &triggersv1.InterceptorRequest{
 				Body:   `{"action": "created", "issue": {"number": 1}, "comment": {"body": "/random"}, "repository": {"full_name": "owner/repo"}, "sender": {"login": "test_owner"}}`,
-				Header: map[string][]string{"X-Hub-Signature-256": {"foo"}, "X-GitHub-Event": {"issue_comment"}},
+				Header: map[string][]string{"X-Hub-Signature": {"foo"}, "X-GitHub-Event": {"issue_comment"}},
 				InterceptorParams: map[string]interface{}{
 					"eventTypes": []string{"pull_request", "issue_comment"},
 					"githubOwners": &Owners{
@@ -1508,7 +1514,7 @@ func TestInterceptor_ExecuteTrigger_owners(t *testing.T) {
 			ownersFileReply:   `{"type": "file","encoding": "base64","content": "YXBwcm92ZXJzOg0KLSB0ZXN0X293bmVy"}`,
 			interceptorRequest: &triggersv1.InterceptorRequest{
 				Body:   `{"action": "created", "issue": {"number": 1}, "comment": {"body": "/ok-to-test"}, "repository": {"full_name": "owner/repo"}, "sender": {"login": "nonowner"}}`,
-				Header: map[string][]string{"X-Hub-Signature-256": {"foo"}, "X-GitHub-Event": {"issue_comment"}},
+				Header: map[string][]string{"X-Hub-Signature": {"foo"}, "X-GitHub-Event": {"issue_comment"}},
 				InterceptorParams: map[string]interface{}{
 					"eventTypes": []string{"pull_request", "issue_comment"},
 					"githubOwners": &Owners{
@@ -1540,7 +1546,7 @@ func TestInterceptor_ExecuteTrigger_owners(t *testing.T) {
 			collaboratorsReply: `[{"login": "test_owner"}]`,
 			interceptorRequest: &triggersv1.InterceptorRequest{
 				Body:   `{"action": "opened", "number": 1, "repository":{"full_name": "owner/repo", "clone_url": "https://github.com/owner/repo.git"}, "sender":{"login": "test_owner"}}`,
-				Header: map[string][]string{"X-Hub-Signature-256": {"foo"}, "X-GitHub-Event": {"pull_request"}},
+				Header: map[string][]string{"X-Hub-Signature": {"foo"}, "X-GitHub-Event": {"pull_request"}},
 				InterceptorParams: map[string]interface{}{
 					"eventTypes": []string{"pull_request", "issue_comment"},
 					"githubOwners": &Owners{
@@ -1575,7 +1581,7 @@ func TestInterceptor_ExecuteTrigger_owners(t *testing.T) {
 			collaboratorsReply: `[{"login": "test_owner"}]`,
 			interceptorRequest: &triggersv1.InterceptorRequest{
 				Body:   `{"action": "opened", "number": 1, "repository":{"full_name": "owner/repo", "clone_url": "https://github.com/owner/repo.git"}, "sender":{"login": "nonowner"}}`,
-				Header: map[string][]string{"X-Hub-Signature-256": {"foo"}, "X-GitHub-Event": {"pull_request"}},
+				Header: map[string][]string{"X-Hub-Signature": {"foo"}, "X-GitHub-Event": {"pull_request"}},
 				InterceptorParams: map[string]interface{}{
 					"eventTypes": []string{"pull_request", "issue_comment"},
 					"githubOwners": &Owners{
@@ -1611,7 +1617,7 @@ func TestInterceptor_ExecuteTrigger_owners(t *testing.T) {
 			collaboratorsReply: `[{"login": "test_owner"}]`,
 			interceptorRequest: &triggersv1.InterceptorRequest{
 				Body:   `{"action": "opened", "number": 1, "repository":{"full_name": "owner/repo", "clone_url": "https://github.com/owner/repo.git"}, "sender":{"login": "nonowner"}}`,
-				Header: map[string][]string{"X-Hub-Signature-256": {"foo"}, "X-GitHub-Event": {"pull_request"}},
+				Header: map[string][]string{"X-Hub-Signature": {"foo"}, "X-GitHub-Event": {"pull_request"}},
 				InterceptorParams: map[string]interface{}{
 					"eventTypes": []string{"pull_request", "issue_comment"},
 					"githubOwners": &Owners{
@@ -1694,7 +1700,7 @@ func TestInterceptor_ExecuteTrigger_owners_parseBodyForOwners(t *testing.T) {
 			eventType: "pull_request",
 			interceptorRequest: &triggersv1.InterceptorRequest{
 				Body:   ``,
-				Header: map[string][]string{"X-Hub-Signature-256": {"foo"}, "X-GitHub-Event": {"pull_request"}},
+				Header: map[string][]string{"X-Hub-Signature": {"foo"}, "X-GitHub-Event": {"pull_request"}},
 			},
 			allowed: false,
 			wantErr: true,
@@ -1705,7 +1711,7 @@ func TestInterceptor_ExecuteTrigger_owners_parseBodyForOwners(t *testing.T) {
 			eventType: "pull_request",
 			interceptorRequest: &triggersv1.InterceptorRequest{
 				Body:   `{"action": "opened","repository":{"full_name": "owner/repo", "clone_url": "https://github.com/owner/repo.git"}, "sender":{"login": "test_owner"}}`,
-				Header: map[string][]string{"X-Hub-Signature-256": {"foo"}, "X-GitHub-Event": {"pull_request"}},
+				Header: map[string][]string{"X-Hub-Signature": {"foo"}, "X-GitHub-Event": {"pull_request"}},
 			},
 			allowed: false,
 			wantErr: true,
@@ -1716,7 +1722,7 @@ func TestInterceptor_ExecuteTrigger_owners_parseBodyForOwners(t *testing.T) {
 			eventType: "issue_comment",
 			interceptorRequest: &triggersv1.InterceptorRequest{
 				Body:   `{"action": "created", "comment": {"body": "/ok-to-test"}, "repository": {"full_name": "owner/repo"}, "sender": {"login": "test_owner"}}`,
-				Header: map[string][]string{"X-Hub-Signature-256": {"foo"}, "X-GitHub-Event": {"issue_comment"}},
+				Header: map[string][]string{"X-Hub-Signature": {"foo"}, "X-GitHub-Event": {"issue_comment"}},
 			},
 			allowed: false,
 			wantErr: true,
@@ -1727,7 +1733,7 @@ func TestInterceptor_ExecuteTrigger_owners_parseBodyForOwners(t *testing.T) {
 			eventType: "issue_comment",
 			interceptorRequest: &triggersv1.InterceptorRequest{
 				Body:   `{"action": "created", "issue": {}, "comment": {"body": "/ok-to-test"}, "repository": {"full_name": "owner/repo"}, "sender": {"login": "test_owner"}}`,
-				Header: map[string][]string{"X-Hub-Signature-256": {"foo"}, "X-GitHub-Event": {"issue_comment"}},
+				Header: map[string][]string{"X-Hub-Signature": {"foo"}, "X-GitHub-Event": {"issue_comment"}},
 			},
 			allowed: false,
 			wantErr: true,
@@ -1738,7 +1744,7 @@ func TestInterceptor_ExecuteTrigger_owners_parseBodyForOwners(t *testing.T) {
 			eventType: "issue_comment",
 			interceptorRequest: &triggersv1.InterceptorRequest{
 				Body:   `{"action": "created", "issue": {"number": 1}, "comment": {"body": "/ok-to-test"}, "sender": {"login": "test_owner"}}`,
-				Header: map[string][]string{"X-Hub-Signature-256": {"foo"}, "X-GitHub-Event": {"issue_comment"}},
+				Header: map[string][]string{"X-Hub-Signature": {"foo"}, "X-GitHub-Event": {"issue_comment"}},
 			},
 			allowed: false,
 			wantErr: true,
@@ -1749,7 +1755,7 @@ func TestInterceptor_ExecuteTrigger_owners_parseBodyForOwners(t *testing.T) {
 			eventType: "issue_comment",
 			interceptorRequest: &triggersv1.InterceptorRequest{
 				Body:   `{"action": "created", "issue": {"number": 1}, "comment": {"body": "/ok-to-test"}, "repository": {}, "sender": {"login": "test_owner"}}`,
-				Header: map[string][]string{"X-Hub-Signature-256": {"foo"}, "X-GitHub-Event": {"issue_comment"}},
+				Header: map[string][]string{"X-Hub-Signature": {"foo"}, "X-GitHub-Event": {"issue_comment"}},
 			},
 			allowed: false,
 			wantErr: true,
@@ -1760,7 +1766,7 @@ func TestInterceptor_ExecuteTrigger_owners_parseBodyForOwners(t *testing.T) {
 			eventType: "issue_comment",
 			interceptorRequest: &triggersv1.InterceptorRequest{
 				Body:   `{"action": "created", "issue": {"number": 1}, "comment": {"body": "/ok-to-test"}, "repository": {"full_name": "owner/repo"}}`,
-				Header: map[string][]string{"X-Hub-Signature-256": {"foo"}, "X-GitHub-Event": {"issue_comment"}},
+				Header: map[string][]string{"X-Hub-Signature": {"foo"}, "X-GitHub-Event": {"issue_comment"}},
 			},
 			allowed: false,
 			wantErr: true,
@@ -1771,7 +1777,7 @@ func TestInterceptor_ExecuteTrigger_owners_parseBodyForOwners(t *testing.T) {
 			eventType: "issue_comment",
 			interceptorRequest: &triggersv1.InterceptorRequest{
 				Body:   `{"action": "created", "issue": {"number": 1}, "repository": {"full_name": "owner/repo"}, "sender": {"login": "test_owner"}}`,
-				Header: map[string][]string{"X-Hub-Signature-256": {"foo"}, "X-GitHub-Event": {"issue_comment"}},
+				Header: map[string][]string{"X-Hub-Signature": {"foo"}, "X-GitHub-Event": {"issue_comment"}},
 			},
 			allowed: false,
 			wantErr: true,
@@ -1782,7 +1788,7 @@ func TestInterceptor_ExecuteTrigger_owners_parseBodyForOwners(t *testing.T) {
 			eventType: "issue_comment",
 			interceptorRequest: &triggersv1.InterceptorRequest{
 				Body:   `{"action": "created", "issue": {"number": 1}, "comment": {}, "repository": {"full_name": "owner/repo"}, "sender": {"login": "test_owner"}}`,
-				Header: map[string][]string{"X-Hub-Signature-256": {"foo"}, "X-GitHub-Event": {"issue_comment"}},
+				Header: map[string][]string{"X-Hub-Signature": {"foo"}, "X-GitHub-Event": {"issue_comment"}},
 			},
 			allowed: false,
 			wantErr: true,
@@ -1793,7 +1799,7 @@ func TestInterceptor_ExecuteTrigger_owners_parseBodyForOwners(t *testing.T) {
 			eventType: "issue_comment",
 			interceptorRequest: &triggersv1.InterceptorRequest{
 				Body:   `{"action": "created", "issue": {"number": 1}, "comment": {"body": "/ok-to-test"}, "repository": {"full_name": "owner/repo"}, "sender": {"login": "test_owner"}}`,
-				Header: map[string][]string{"X-Hub-Signature-256": {"foo"}, "X-GitHub-Event": {"issue_comment"}},
+				Header: map[string][]string{"X-Hub-Signature": {"foo"}, "X-GitHub-Event": {"issue_comment"}},
 			},
 			allowed: true,
 			wantErr: false,
@@ -1828,7 +1834,7 @@ func TestInterceptor_ExecuteTrigger_owners_data_validation(t *testing.T) {
 			ownersFileReply: `{"type": "file","encoding": "base64","content": "YXBwcm92ZXJzOg0KLSB0ZXN0X293bmVy"}`,
 			interceptorRequest: &triggersv1.InterceptorRequest{
 				Body:   `{"action": "created", "issue": {"number": 1}, "comment": {"body": "/ok-to-test"}, "repository": {"full_name": "owner/repo"}, "sender": {"login": "test_owner"}}`,
-				Header: map[string][]string{"X-Hub-Signature-256": {"foo"}, "X-GitHub-Event": {"issue_comment"}},
+				Header: map[string][]string{"X-Hub-Signature": {"foo"}, "X-GitHub-Event": {"issue_comment"}},
 				InterceptorParams: map[string]interface{}{
 					"eventTypes": []string{"pull_request", "issue_comment"},
 					"githubOwners": &Owners{
@@ -1862,7 +1868,7 @@ func TestInterceptor_ExecuteTrigger_owners_data_validation(t *testing.T) {
 			name: "error parsing payload body",
 			interceptorRequest: &triggersv1.InterceptorRequest{
 				Body:   `{"action": "opened","repository":{"full_name": "owner/repo", "clone_url": "https://github.com/owner/repo.git"}, "sender":{"login": "test_owner"}}`,
-				Header: map[string][]string{"X-Hub-Signature-256": {"foo"}, "X-GitHub-Event": {"pull_request"}},
+				Header: map[string][]string{"X-Hub-Signature": {"foo"}, "X-GitHub-Event": {"pull_request"}},
 				InterceptorParams: map[string]interface{}{
 					"eventTypes": []string{"pull_request", "issue_comment"},
 					"githubOwners": &Owners{
@@ -1894,7 +1900,7 @@ func TestInterceptor_ExecuteTrigger_owners_data_validation(t *testing.T) {
 			ownersAPICallStatusCode: 404,
 			interceptorRequest: &triggersv1.InterceptorRequest{
 				Body:   `{"action": "created", "issue": {"number": 1}, "comment": {"body": "/ok-to-test"}, "repository": {"full_name": "owner/repo"}, "sender": {"login": "test_owner"}}`,
-				Header: map[string][]string{"X-Hub-Signature-256": {"foo"}, "X-GitHub-Event": {"issue_comment"}},
+				Header: map[string][]string{"X-Hub-Signature": {"foo"}, "X-GitHub-Event": {"issue_comment"}},
 				InterceptorParams: map[string]interface{}{
 					"eventTypes": []string{"pull_request", "issue_comment"},
 					"githubOwners": &Owners{
@@ -1930,7 +1936,7 @@ func TestInterceptor_ExecuteTrigger_owners_data_validation(t *testing.T) {
 			ownersAPICallStatusCode: 500,
 			interceptorRequest: &triggersv1.InterceptorRequest{
 				Body:   `{"action": "created", "issue": {"number": 1}, "comment": {"body": "/ok-to-test"}, "repository": {"full_name": "owner/repo"}, "sender": {"login": "test_owner"}}`,
-				Header: map[string][]string{"X-Hub-Signature-256": {"foo"}, "X-GitHub-Event": {"issue_comment"}},
+				Header: map[string][]string{"X-Hub-Signature": {"foo"}, "X-GitHub-Event": {"issue_comment"}},
 				InterceptorParams: map[string]interface{}{
 					"eventTypes": []string{"pull_request", "issue_comment"},
 					"githubOwners": &Owners{
@@ -1965,7 +1971,7 @@ func TestInterceptor_ExecuteTrigger_owners_data_validation(t *testing.T) {
 			collaboratorsReply: `[{"login": "test_owner"}]`,
 			interceptorRequest: &triggersv1.InterceptorRequest{
 				Body:   `{"action": "opened", "number": 1, "repository":{"full_name": "owner/repo", "clone_url": "https://github.com/owner/repo.git"}, "sender":{"login": "nonowner"}}`,
-				Header: map[string][]string{"X-Hub-Signature-256": {"foo"}, "X-GitHub-Event": {"pull_request"}},
+				Header: map[string][]string{"X-Hub-Signature": {"foo"}, "X-GitHub-Event": {"pull_request"}},
 				InterceptorParams: map[string]interface{}{
 					"eventTypes": []string{"pull_request", "issue_comment"},
 					"githubOwners": &Owners{

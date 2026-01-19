@@ -33,4 +33,5 @@ func TestMakeConfig(t *testing.T) {
 	if got := *cfg.Image; got != want {
 		t.Errorf("MakeConfig().Image = %s, wanted %s", got, want)
 	}
+
 }
