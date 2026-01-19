@@ -231,6 +231,7 @@ func (r Sink) HandleEvent(response http.ResponseWriter, request *http.Request) {
 			r.emitEvents(r.EventRecorder, el, events.TriggerProcessingFailedV1, err)
 			r.sendCloudEvents(nil, *el, eventID, events.TriggerProcessingFailedV1)
 		}
+
 	} else {
 		responseEvent := cloudevents.NewEvent()
 		responseEvent.SetID(eventID)
@@ -448,6 +449,7 @@ func (r Sink) processTrigger(t triggersv1.Trigger, el *triggersv1.EventListener,
 	go r.recordResourceCreation(resources)
 	r.emitEvents(r.EventRecorder, el, events.TriggerProcessingSuccessfulV1, nil)
 	r.sendCloudEvents(request.Header, *el, eventID, events.TriggerProcessingSuccessfulV1)
+
 }
 
 func (r Sink) ExecuteTriggerInterceptors(t triggersv1.Trigger, in *http.Request, event []byte, log *zap.SugaredLogger, eventID string, extensions map[string]interface{}) ([]byte, http.Header, *triggersv1.InterceptorResponse, error) {
@@ -466,16 +468,13 @@ func (r Sink) ExecuteInterceptors(trInt []*triggersv1.TriggerInterceptor, in *ht
 	request := triggersv1.InterceptorRequest{
 		Body:       string(event),
 		Header:     in.Header.Clone(),
-		Extensions: make(map[string]interface{}),
+		Extensions: extensions,
 		Context: &triggersv1.TriggerContext{
 			EventURL: in.URL.String(),
 			EventID:  eventID,
 			// t.Name might not be fully accurate until we get rid of triggers inlined within EventListener
 			TriggerID: triggerID,
 		},
-	}
-	for k, v := range extensions {
-		request.Extensions[k] = v
 	}
 
 	// check if string is urlencoded
@@ -484,6 +483,7 @@ func (r Sink) ExecuteInterceptors(trInt []*triggersv1.TriggerInterceptor, in *ht
 
 	// parse form-data payload
 	if v := in.Header.Get("Content-Type"); v == "application/x-www-form-urlencoded" && len(parsedQuery) > 1 {
+
 		// Convert the map into a JSON string
 		jsonString, err := json.Marshal(parsedQuery)
 		if err != nil {
@@ -575,6 +575,7 @@ func (r Sink) ExecuteInterceptors(trInt []*triggersv1.TriggerInterceptor, in *ht
 
 		// Clear interceptorParams for the next interceptor in chain
 		request.InterceptorParams = map[string]interface{}{}
+
 	}
 
 	return []byte(request.Body), request.Header, &triggersv1.InterceptorResponse{
@@ -616,7 +617,7 @@ func extendBodyWithExtensions(body []byte, extensions map[string]interface{}) ([
 		if err != nil {
 			return nil, fmt.Errorf("failed to marshal value to JSON: %w", err)
 		}
-		body, err = sjson.SetRawBytes(body, "extensions."+k, vb)
+		body, err = sjson.SetRawBytes(body, fmt.Sprintf("extensions.%s", k), vb)
 		if err != nil {
 			return nil, fmt.Errorf("failed to sjson extensions to body: %w", err)
 		}

@@ -56,7 +56,7 @@ func Get(ctx context.Context) *Recorder {
 }
 
 type recorderInformer struct {
-	ctx     context.Context //nolint:containedctx
+	ctx     context.Context
 	metrics *Recorder
 	listers
 }
