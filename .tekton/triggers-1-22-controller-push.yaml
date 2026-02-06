@@ -12,14 +12,14 @@ metadata:
     pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch
       == "release-v1.22.x" &&
       ("upstream/***".pathChanged() || ".konflux/patches/***".pathChanged() || ".konflux/rpms/***".pathChanged() ||
-      ".konflux/dockerfiles/eventlistenersink.Dockerfile".pathChanged() ||
-      ".tekton/tektoncd-triggers-1-22-eventlistenersink-push.yaml".pathChanged())
+      ".konflux/dockerfiles/controller.Dockerfile".pathChanged() ||
+      ".tekton/triggers-1-22-controller-push.yaml".pathChanged())
   creationTimestamp: null
   labels:
     appstudio.openshift.io/application: openshift-pipelines-core-1-22
-    appstudio.openshift.io/component: tektoncd-triggers-1-22-eventlistenersink
+    appstudio.openshift.io/component: triggers-1-22-controller
     pipelines.appstudio.openshift.io/type: build
-  name: tektoncd-triggers-1-22-eventlistenersink-on-push
+  name: triggers-1-22-controller-on-push
   namespace: tekton-ecosystem-tenant
 spec:
   params:
@@ -30,9 +30,9 @@ spec:
   - name: revision
     value: '{{revision}}'
   - name: output-image
-    value: quay.io/redhat-user-workloads/tekton-ecosystem-tenant/pipelines-triggers-eventlistenersink-rhel9:{{revision}}
+    value: quay.io/redhat-user-workloads/tekton-ecosystem-tenant/pipelines-triggers-controller-rhel9:{{revision}}
   - name: dockerfile
-    value: .konflux/dockerfiles/eventlistenersink.Dockerfile
+    value: .konflux/dockerfiles/controller.Dockerfile
   - name: additional-tags
     value:
       - "v1.22.0"
@@ -42,7 +42,7 @@ spec:
   pipelineRef:
     name: docker-build-ta
   taskRunTemplate:
-    serviceAccountName: build-pipeline-tektoncd-triggers-1-22-eventlistenersink
+    serviceAccountName: build-pipeline-triggers-1-22-controller
   workspaces:
   - name: git-auth
     secret:
