@@ -38,3 +38,5 @@ RUN groupadd -r -g 65532 nonroot && useradd --no-log-init -r -u 65532 -g nonroot
 USER 65532
 
 ENTRYPOINT ["/ko-app/eventlistenersink"]
+
+LABEL cpe="cpe:/a:redhat:openshift_pipelines:1.20::el9"
