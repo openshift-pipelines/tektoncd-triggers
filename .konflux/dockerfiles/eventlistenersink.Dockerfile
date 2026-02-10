@@ -14,7 +14,7 @@ RUN go build -ldflags="-X 'knative.dev/pkg/changeset.rev=$(cat HEAD)'" -mod=vend
     ./cmd/eventlistenersink
 
 FROM $RUNTIME
-ARG VERSION=triggers-1.15.3
+ARG VERSION=triggers-1.15.4
 
 ENV CONTROLLER=/usr/local/bin/eventlistenersink \
     KO_APP=/ko-app \
