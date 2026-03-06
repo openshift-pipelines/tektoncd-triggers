@@ -1,4 +1,4 @@
-ARG GO_BUILDER=brew.registry.redhat.io/rh-osbs/openshift-golang-builder:v1.24
+ARG GO_BUILDER=registry.access.redhat.com/ubi9/go-toolset:1.25
 ARG RUNTIME=registry.redhat.io/ubi9/ubi-minimal@sha256:c7d44146f826037f6873d99da479299b889473492d3c1ab8af86f08af04ec8a0
 FROM $GO_BUILDER AS builder
 
@@ -13,7 +13,7 @@ RUN go build -ldflags="-X 'knative.dev/pkg/changeset.rev=$(cat HEAD)'" -mod=vend
     ./cmd/interceptors
 
 FROM $RUNTIME
-ARG VERSION=triggers-1.21
+ARG VERSION=1.21
 
 ENV CONTROLLER=/usr/local/bin/interceptors \
     KO_APP=/ko-app \
@@ -23,16 +23,16 @@ COPY --from=builder /tmp/interceptors /ko-app/interceptors
 COPY head ${KO_DATA_PATH}/HEAD
 
 LABEL \
-      com.redhat.component="openshift-pipelines-triggers-core-interceptors-rhel9-container" \
-      cpe="cpe:/a:redhat:openshift_pipelines:1.21::el9" \
-      description="Red Hat OpenShift Pipelines tektoncd-triggers core-interceptors" \
-      io.k8s.description="Red Hat OpenShift Pipelines tektoncd-triggers core-interceptors" \
-      io.k8s.display-name="Red Hat OpenShift Pipelines tektoncd-triggers core-interceptors" \
-      io.openshift.tags="tekton,openshift,tektoncd-triggers,core-interceptors" \
-      maintainer="pipelines-extcomm@redhat.com" \
-      name="openshift-pipelines/pipelines-triggers-core-interceptors-rhel9" \
-      summary="Red Hat OpenShift Pipelines tektoncd-triggers core-interceptors" \
-      version="v1.21.1"
+    com.redhat.component="openshift-pipelines-triggers-core-interceptors-rhel9-container" \
+    cpe="cpe:/a:redhat:openshift_pipelines:1.21::el9" \
+    description="Red Hat OpenShift Pipelines tektoncd-triggers core-interceptors" \
+    io.k8s.description="Red Hat OpenShift Pipelines tektoncd-triggers core-interceptors" \
+    io.k8s.display-name="Red Hat OpenShift Pipelines tektoncd-triggers core-interceptors" \
+    io.openshift.tags="tekton,openshift,tektoncd-triggers,core-interceptors" \
+    maintainer="pipelines-extcomm@redhat.com" \
+    name="openshift-pipelines/pipelines-triggers-core-interceptors-rhel9" \
+    summary="Red Hat OpenShift Pipelines tektoncd-triggers core-interceptors" \
+    version="v1.21.1"
 
 RUN groupadd -r -g 65532 nonroot && useradd --no-log-init -r -u 65532 -g nonroot nonroot
 USER 65532
