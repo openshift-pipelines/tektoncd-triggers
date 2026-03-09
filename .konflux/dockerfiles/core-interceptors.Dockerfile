@@ -1,5 +1,5 @@
 # Rebuild trigger: 1.15.4 release 2026-01-19
-ARG GO_BUILDER=brew.registry.redhat.io/rh-osbs/openshift-golang-builder:v1.23
+ARG GO_BUILDER=registry.access.redhat.com/ubi9/go-toolset:1.25
 ARG RUNTIME=registry.redhat.io/ubi8/ubi:latest@sha256:a9bd8791589bee5bc0f9444fc37bdf7e8fabb8edf1d3f71dd673d31688c10950
 
 FROM $GO_BUILDER AS builder
@@ -14,7 +14,7 @@ RUN go build -ldflags="-X 'knative.dev/pkg/changeset.rev=$(cat HEAD)'" -mod=vend
     ./cmd/interceptors
 
 FROM $RUNTIME
-ARG VERSION=triggers-1.15.4
+ARG VERSION=1.15
 
 ENV CONTROLLER=/usr/local/bin/interceptors \
     KO_APP=/ko-app \
@@ -24,16 +24,16 @@ COPY --from=builder /tmp/interceptors /ko-app/interceptors
 COPY head ${KO_DATA_PATH}/HEAD
 
 LABEL \
-      com.redhat.component="openshift-pipelines-triggers-core-interceptors-rhel8-container" \
-      name="openshift-pipelines/pipelines-triggers-core-interceptors-rhel8" \
-      version=$VERSION \
-      cpe="cpe:/a:redhat:openshift_pipelines:1.15::el8" \
-      summary="Red Hat OpenShift Pipelines Triggers Core Interceptors" \
-      maintainer="pipelines-extcomm@redhat.com" \
-      description="Red Hat OpenShift Pipelines Triggers Core Interceptors" \
-      io.k8s.display-name="Red Hat OpenShift Pipelines Triggers Core Interceptors" \
-      io.k8s.description="Red Hat OpenShift Pipelines Triggers Core Interceptors" \
-      io.openshift.tags="pipelines,tekton,openshift"
+    com.redhat.component="openshift-pipelines-triggers-core-interceptors-rhel9-container" \
+    cpe="cpe:/a:redhat:openshift_pipelines:1.15::el9" \
+    description="Red Hat OpenShift Pipelines tektoncd-triggers core-interceptors" \
+    io.k8s.description="Red Hat OpenShift Pipelines tektoncd-triggers core-interceptors" \
+    io.k8s.display-name="Red Hat OpenShift Pipelines tektoncd-triggers core-interceptors" \
+    io.openshift.tags="tekton,openshift,tektoncd-triggers,core-interceptors" \
+    maintainer="pipelines-extcomm@redhat.com" \
+    name="openshift-pipelines/pipelines-triggers-core-interceptors-rhel9" \
+    summary="Red Hat OpenShift Pipelines tektoncd-triggers core-interceptors" \
+    version="v1.15.5"
 
 RUN groupadd -r -g 65532 nonroot && useradd --no-log-init -r -u 65532 -g nonroot nonroot
 
