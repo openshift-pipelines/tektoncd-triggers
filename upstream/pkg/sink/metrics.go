@@ -20,7 +20,7 @@ var (
 		"The eventlistener HTTP request duration",
 		stats.UnitDimensionless)
 	elDistribution = view.Distribution(metrics.BucketsNBy10(0.001, 5)...)
-	eventCount     = stats.Float64("event_count",
+	eventRcdCount  = stats.Float64("event_received_count",
 		"number of events received by sink",
 		stats.UnitDimensionless)
 	triggeredResources = stats.Int64("triggered_resources", "Count of the number of triggered eventlistener resources", stats.UnitDimensionless)
@@ -65,8 +65,8 @@ func NewRecorder() (*Recorder, error) {
 			TagKeys:     []tag.Key{r.kind},
 		},
 		&view.View{
-			Description: eventCount.Description(),
-			Measure:     eventCount,
+			Description: eventRcdCount.Description(),
+			Measure:     eventRcdCount,
 			Aggregation: view.Count(),
 			TagKeys:     []tag.Key{r.status},
 		},
@@ -95,7 +95,6 @@ func (s *Sink) NewMetricsRecorderInterceptor() MetricsInterceptor {
 }
 
 func (s *Sink) recordDurationMetrics(w *StatusRecorder, elapsed time.Duration) {
-
 	duration := elapsed.Seconds()
 	s.Logger.Debugw("event listener request completed", "status", w.Status, "duration", duration)
 	ctx, err := tag.New(
@@ -111,7 +110,6 @@ func (s *Sink) recordDurationMetrics(w *StatusRecorder, elapsed time.Duration) {
 }
 
 func (s *Sink) recordCountMetrics(status string) {
-
 	s.Logger.Debugw("event listener request", "status", status)
 	ctx, err := tag.New(
 		context.Background(),
@@ -119,11 +117,11 @@ func (s *Sink) recordCountMetrics(status string) {
 	)
 
 	if err != nil {
-		s.Logger.Warnf("failed to create tag for metric event_count: %w", err)
+		s.Logger.Warnf("failed to create tag for metric event_received_count: %w", err)
 		return
 	}
 
-	metrics.Record(ctx, eventCount.M(1))
+	metrics.Record(ctx, eventRcdCount.M(1))
 }
 
 func (s *Sink) recordResourceCreation(resources []json.RawMessage) {
