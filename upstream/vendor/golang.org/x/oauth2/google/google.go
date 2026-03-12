@@ -103,7 +103,6 @@ const (
 	externalAccountKey               = "external_account"
 	externalAccountAuthorizedUserKey = "external_account_authorized_user"
 	impersonatedServiceAccount       = "impersonated_service_account"
-	gdchServiceAccountKey            = "gdch_service_account"
 )
 
 // credentialsFile is the unmarshalled representation of a credentials file.
@@ -166,7 +165,7 @@ func (f *credentialsFile) jwtConfig(scopes []string, subject string) *jwt.Config
 
 func (f *credentialsFile) tokenSource(ctx context.Context, params CredentialsParams) (oauth2.TokenSource, error) {
 	switch f.Type {
-	case serviceAccountKey, gdchServiceAccountKey:
+	case serviceAccountKey:
 		cfg := f.jwtConfig(params.Scopes, params.Subject)
 		return cfg.TokenSource(ctx), nil
 	case userCredentialsKey:
@@ -253,7 +252,7 @@ func (f *credentialsFile) tokenSource(ctx context.Context, params CredentialsPar
 // Further information about retrieving access tokens from the GCE metadata
 // server can be found at https://cloud.google.com/compute/docs/authentication.
 func ComputeTokenSource(account string, scope ...string) oauth2.TokenSource {
-	// Refresh 3 minutes and 45 seconds early. The shortest MDS cache is currently 4 minutes, so any
+	// refresh 3 minutes and 45 seconds early. The shortest MDS cache is currently 4 minutes, so any
 	// refreshes earlier are a waste of compute.
 	earlyExpirySecs := 225 * time.Second
 	return computeTokenSource(account, earlyExpirySecs, scope...)
