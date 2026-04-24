@@ -23,7 +23,6 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/tektoncd/triggers/pkg/apis/config"
 	"github.com/tektoncd/triggers/pkg/apis/triggers/contexts"
 	"github.com/tektoncd/triggers/pkg/apis/triggers/v1beta1"
 	triggersclientset "github.com/tektoncd/triggers/pkg/client/clientset/versioned"
@@ -109,12 +108,10 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, el *v1beta1.EventListene
 	// and may not have had all of the assumed default specified.
 	el.SetDefaults(contexts.WithUpgradeViaDefaulting(ctx))
 
-	cfg := config.FromContextOrDefaults(ctx)
-
 	if el.Spec.Resources.CustomResource != nil {
-		return r.reconcileCustomObject(ctx, el, cfg)
+		return r.reconcileCustomObject(ctx, el)
 	}
-	deploymentReconcileError := r.reconcileDeployment(ctx, el, cfg)
+	deploymentReconcileError := r.reconcileDeployment(ctx, el)
 	serviceReconcileError := r.reconcileService(ctx, el)
 	if el.Spec.Resources.CustomResource == nil {
 		el.Status.SetReadyCondition()
@@ -187,8 +184,8 @@ func (r *Reconciler) reconcileService(ctx context.Context, el *v1beta1.EventList
 	return nil
 }
 
-func (r *Reconciler) reconcileDeployment(ctx context.Context, el *v1beta1.EventListener, cfg *config.Config) error {
-	deployment, err := resources.MakeDeployment(ctx, el, r.configAcc, r.config, cfg)
+func (r *Reconciler) reconcileDeployment(ctx context.Context, el *v1beta1.EventListener) error {
+	deployment, err := resources.MakeDeployment(ctx, el, r.configAcc, r.config)
 	if err != nil {
 		logging.FromContext(ctx).Error(err)
 		return err
@@ -250,8 +247,8 @@ func (r *Reconciler) reconcileDeployment(ctx context.Context, el *v1beta1.EventL
 	return nil
 }
 
-func (r *Reconciler) reconcileCustomObject(ctx context.Context, el *v1beta1.EventListener, cfg *config.Config) error {
-	data, err := resources.MakeCustomObject(ctx, el, r.configAcc, r.config, cfg)
+func (r *Reconciler) reconcileCustomObject(ctx context.Context, el *v1beta1.EventListener) error {
+	data, err := resources.MakeCustomObject(ctx, el, r.configAcc, r.config)
 	if err != nil {
 		logging.FromContext(ctx).Errorf("unable to construct custom object", err)
 		return err
