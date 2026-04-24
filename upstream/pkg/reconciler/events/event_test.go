@@ -58,7 +58,7 @@ func TestEmit(t *testing.T) {
 
 		err := checkEvents(t, fr, ts.name, ts.wantEvent)
 		if err != nil {
-			t.Error(err.Error())
+			t.Errorf(err.Error())
 		}
 	}
 }

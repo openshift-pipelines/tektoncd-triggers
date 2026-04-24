@@ -15,9 +15,6 @@
 package cel
 
 import (
-	"fmt"
-	"sort"
-
 	"github.com/google/cel-go/common"
 	"github.com/google/cel-go/common/ast"
 	"github.com/google/cel-go/common/types"
@@ -30,43 +27,17 @@ import (
 // passes to ensure that the final optimized output is a valid expression with metadata consistent
 // with what would have been generated from a parsed and checked expression.
 //
-// Note: source position information is best-effort and incomplete, but optimized expressions
+// Note: source position information is best-effort and likely wrong, but optimized expressions
 // should be suitable for calls to parser.Unparse.
 type StaticOptimizer struct {
 	optimizers []ASTOptimizer
-	// If set, Optimize() will use this Source instead of the one from the AST.
-	sourceOverride *Source
 }
-
-type OptimizerOption func(*StaticOptimizer) (*StaticOptimizer, error)
 
 // NewStaticOptimizer creates a StaticOptimizer with a sequence of ASTOptimizer's to be applied
 // to a checked expression.
-func NewStaticOptimizer(options ...any) (*StaticOptimizer, error) {
-	so := &StaticOptimizer{}
-	var err error
-	for _, opt := range options {
-		switch v := opt.(type) {
-		case ASTOptimizer:
-			so.optimizers = append(so.optimizers, v)
-		case OptimizerOption:
-			so, err = v(so)
-			if err != nil {
-				return nil, err
-			}
-		default:
-			return nil, fmt.Errorf("unsupported option: %v", v)
-		}
-	}
-	return so, nil
-}
-
-// OptimizeWithSource overrides the source used by the optimizer.
-// Note this will cause the source info from the AST passed to Optimize() to be discarded.
-func OptimizeWithSource(source Source) OptimizerOption {
-	return func(so *StaticOptimizer) (*StaticOptimizer, error) {
-		so.sourceOverride = &source
-		return so, nil
+func NewStaticOptimizer(optimizers ...ASTOptimizer) *StaticOptimizer {
+	return &StaticOptimizer{
+		optimizers: optimizers,
 	}
 }
 
@@ -75,22 +46,16 @@ func OptimizeWithSource(source Source) OptimizerOption {
 // If issues are encountered, the Issues.Err() return value will be non-nil.
 func (opt *StaticOptimizer) Optimize(env *Env, a *Ast) (*Ast, *Issues) {
 	// Make a copy of the AST to be optimized.
-	optimized := ast.Copy(a.NativeRep())
-	source := a.Source()
-	sourceInfo := optimized.SourceInfo()
-	if opt.sourceOverride != nil {
-		source = *opt.sourceOverride
-		sourceInfo = ast.NewSourceInfo(*opt.sourceOverride)
-	}
-	ids := newIDGenerator(ast.MaxID(a.NativeRep()))
+	optimized := ast.Copy(a.impl)
+	ids := newIDGenerator(ast.MaxID(a.impl))
 
 	// Create the optimizer context, could be pooled in the future.
-	issues := NewIssues(common.NewErrors(source))
+	issues := NewIssues(common.NewErrors(a.Source()))
 	baseFac := ast.NewExprFactory()
 	exprFac := &optimizerExprFactory{
 		idGenerator: ids,
 		fac:         baseFac,
-		sourceInfo:  sourceInfo,
+		sourceInfo:  optimized.SourceInfo(),
 	}
 	ctx := &OptimizerContext{
 		optimizerExprFactory: exprFac,
@@ -113,18 +78,18 @@ func (opt *StaticOptimizer) Optimize(env *Env, a *Ast) (*Ast, *Issues) {
 
 		// Recheck the updated expression for any possible type-agreement or validation errors.
 		parsed := &Ast{
-			source: source,
+			source: a.Source(),
 			impl:   ast.NewAST(expr, info)}
 		checked, iss := ctx.Check(parsed)
 		if iss.Err() != nil {
 			return nil, iss
 		}
-		optimized = checked.NativeRep()
+		optimized = checked.impl
 	}
 
 	// Return the optimized result.
 	return &Ast{
-		source: source,
+		source: a.Source(),
 		impl:   optimized,
 	}, nil
 }
@@ -133,23 +98,14 @@ func (opt *StaticOptimizer) Optimize(env *Env, a *Ast) (*Ast, *Issues) {
 // that the ids within the expression correspond to the ids within macros.
 func normalizeIDs(idGen ast.IDGenerator, optimized ast.Expr, info *ast.SourceInfo) {
 	optimized.RenumberIDs(idGen)
-	info.RenumberIDs(idGen)
 
 	if len(info.MacroCalls()) == 0 {
 		return
 	}
 
-	// Sort the macro ids to make sure that the renumbering of macro-specific variables
-	// is stable across normalization calls.
-	sortedMacroIDs := []int64{}
-	for id := range info.MacroCalls() {
-		sortedMacroIDs = append(sortedMacroIDs, id)
-	}
-	sort.Slice(sortedMacroIDs, func(i, j int) bool { return sortedMacroIDs[i] < sortedMacroIDs[j] })
-
 	// First, update the macro call ids themselves.
 	callIDMap := map[int64]int64{}
-	for _, id := range sortedMacroIDs {
+	for id := range info.MacroCalls() {
 		callIDMap[id] = idGen(id)
 	}
 	// Then update the macro call definitions which refer to these ids, but
@@ -160,8 +116,7 @@ func normalizeIDs(idGen ast.IDGenerator, optimized ast.Expr, info *ast.SourceInf
 		call ast.Expr
 	}
 	macroUpdates := []macroUpdate{}
-	for _, oldID := range sortedMacroIDs {
-		newID := callIDMap[oldID]
+	for oldID, newID := range callIDMap {
 		call, found := info.GetMacroCall(oldID)
 		if !found {
 			continue
@@ -179,7 +134,6 @@ func cleanupMacroRefs(expr ast.Expr, info *ast.SourceInfo) {
 	if len(info.MacroCalls()) == 0 {
 		return
 	}
-
 	// Sanitize the macro call references once the optimized expression has been computed
 	// and the ids normalized between the expression and the macros.
 	exprRefMap := make(map[int64]struct{})
@@ -246,16 +200,6 @@ type OptimizerContext struct {
 	*Issues
 }
 
-// ExtendEnv auguments the context's environment with the additional options.
-func (opt *OptimizerContext) ExtendEnv(opts ...EnvOption) error {
-	e, err := opt.Env.Extend(opts...)
-	if err != nil {
-		return err
-	}
-	opt.Env = e
-	return nil
-}
-
 // ASTOptimizer applies an optimization over an AST and returns the optimized result.
 type ASTOptimizer interface {
 	// Optimize optimizes a type-checked AST within an Environment and accumulates any issues.
@@ -295,9 +239,6 @@ func (opt *optimizerExprFactory) CopyASTAndMetadata(a *ast.AST) ast.Expr {
 	for macroID, call := range copyInfo.MacroCalls() {
 		opt.SetMacroCall(macroID, call)
 	}
-	for id, offset := range copyInfo.OffsetRanges() {
-		opt.sourceInfo.SetOffsetRange(id, offset)
-	}
 	return copyExpr
 }
 
@@ -310,11 +251,6 @@ func (opt *optimizerExprFactory) ClearMacroCall(id int64) {
 // metadata.
 func (opt *optimizerExprFactory) SetMacroCall(id int64, expr ast.Expr) {
 	opt.sourceInfo.SetMacroCall(id, expr)
-}
-
-// MacroCalls returns the map of macro calls currently in the context.
-func (opt *optimizerExprFactory) MacroCalls() map[int64]ast.Expr {
-	return opt.sourceInfo.MacroCalls()
 }
 
 // NewBindMacro creates an AST expression representing the expanded bind() macro, and a macro expression

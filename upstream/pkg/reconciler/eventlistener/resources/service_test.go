@@ -204,6 +204,7 @@ func TestService(t *testing.T) {
 }
 
 func TestServicePort(t *testing.T) {
+
 	k8sResSvcPort := int32(80)
 
 	tests := []struct {

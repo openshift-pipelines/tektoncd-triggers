@@ -105,7 +105,7 @@ func TestServer_ServeHTTP(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Failed to marshal errors")
 			}
-			req := httptest.NewRequest(http.MethodPost, fmt.Sprintf("http://example.com%s", tc.path), bytes.NewBuffer(body))
+			req := httptest.NewRequest("POST", fmt.Sprintf("http://example.com%s", tc.path), bytes.NewBuffer(body))
 			w := httptest.NewRecorder()
 			server.ServeHTTP(w, req)
 			resp := w.Result()
@@ -127,6 +127,7 @@ func TestServer_ServeHTTP(t *testing.T) {
 			}
 		})
 	}
+
 }
 
 // Tests unexpected error cases where interceptor processing does not happen.
@@ -163,7 +164,7 @@ func TestServer_ServeHTTP_Error(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Failed to marshal errors ")
 			}
-			req := httptest.NewRequest(http.MethodPost, fmt.Sprintf("http://example.com%s", tc.path), bytes.NewBuffer(body))
+			req := httptest.NewRequest("POST", fmt.Sprintf("http://example.com%s", tc.path), bytes.NewBuffer(body))
 			w := httptest.NewRecorder()
 			server.ServeHTTP(w, req)
 			resp := w.Result()
@@ -211,7 +212,7 @@ func Test_SecretNotExist(t *testing.T) {
 	logger := zaptest.NewLogger(t)
 	ctx, _ := test.SetupFakeContext(t)
 	clientSet := fakekubeclient.Get(ctx).CoreV1()
-	_, _, err := createCerts(ctx, clientSet, time.Now().Add(Century), logger.Sugar(), false)
+	_, _, err := createCerts(ctx, clientSet, time.Now().Add(Decade), logger.Sugar(), false)
 	if err != nil && !strings.Contains(err.Error(), "not found") {
 		t.Error(err)
 	}
@@ -240,7 +241,7 @@ func createSecret(t *testing.T, noAfter time.Time, certExpire bool) (v1.CoreV1In
 }
 
 func Test_CreateSecret(t *testing.T) {
-	_, sCert, caCert, err := createSecret(t, time.Now().Add(Century), true)
+	_, sCert, caCert, err := createSecret(t, time.Now().Add(Decade), true)
 	if err != nil {
 		t.Error(err)
 	}
@@ -416,8 +417,7 @@ func Test_UpdateCACertToClusterInterceptorCRD(t *testing.T) {
 		t.Error(err)
 	}
 
-	stopFunc := UpdateCACertToClusterInterceptorCRD(ctx, server, faketriggersclient.Get(ctx).TriggersV1alpha1(), logger.Sugar(), time.Second)
-	defer stopFunc()
+	UpdateCACertToClusterInterceptorCRD(ctx, server, faketriggersclient.Get(ctx).TriggersV1alpha1(), logger.Sugar(), time.Second)
 
 	time.Sleep(10 * time.Second)
 	ciNew, err := faketriggersclient.Get(ctx).TriggersV1alpha1().ClusterInterceptors().Get(ctx, "firstci1", metav1.GetOptions{})
