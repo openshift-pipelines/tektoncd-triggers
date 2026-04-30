@@ -10,16 +10,16 @@ metadata:
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
     pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch
-      == "next" &&
+      == "release-v1.23.x" &&
       ("upstream/***".pathChanged() || ".konflux/patches/***".pathChanged() || ".konflux/rpms/***".pathChanged() ||
-      ".konflux/dockerfiles/webhook.Dockerfile".pathChanged() ||
-      ".tekton/tektoncd-triggers-next-webhook-push.yaml".pathChanged())
+      ".konflux/dockerfiles/controller.Dockerfile".pathChanged() ||
+      ".tekton/tektoncd-triggers-1-23-controller-push.yaml".pathChanged())
   creationTimestamp: null
   labels:
-    appstudio.openshift.io/application: openshift-pipelines-core-next
-    appstudio.openshift.io/component: tektoncd-triggers-next-webhook
+    appstudio.openshift.io/application: openshift-pipelines-core-1-23
+    appstudio.openshift.io/component: tektoncd-triggers-1-23-controller
     pipelines.appstudio.openshift.io/type: build
-  name: tektoncd-triggers-next-webhook-on-push
+  name: tektoncd-triggers-1-23-controller-on-push
   namespace: tekton-ecosystem-tenant
 spec:
   params:
@@ -30,19 +30,19 @@ spec:
   - name: revision
     value: '{{revision}}'
   - name: output-image
-    value: quay.io/redhat-user-workloads/tekton-ecosystem-tenant/pipelines-triggers-webhook-rhel9:{{revision}}
+    value: quay.io/redhat-user-workloads/tekton-ecosystem-tenant/pipelines-triggers-controller-rhel9:{{revision}}
   - name: dockerfile
-    value: .konflux/dockerfiles/webhook.Dockerfile
+    value: .konflux/dockerfiles/controller.Dockerfile
   - name: additional-tags
     value:
-      - "next"
+      - "v1.23.0"
   - name: prefetch-input
     value: |
       {"type": "rpm", "path": ".konflux/rpms"}
   pipelineRef:
     name: docker-build-ta
   taskRunTemplate:
-    serviceAccountName: build-pipeline-tektoncd-triggers-next-webhook
+    serviceAccountName: build-pipeline-tektoncd-triggers-1-23-controller
   workspaces:
   - name: git-auth
     secret:
