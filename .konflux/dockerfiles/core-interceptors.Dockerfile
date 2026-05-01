@@ -33,7 +33,7 @@ LABEL \
     maintainer="pipelines-extcomm@redhat.com" \
     name="openshift-pipelines/pipelines-triggers-core-interceptors-rhel9" \
     summary="Red Hat OpenShift Pipelines tektoncd-triggers core-interceptors" \
-    version="v1.20.4"
+    version="v1.20.5"
 
 RUN groupadd -r -g 65532 nonroot && useradd --no-log-init -r -u 65532 -g nonroot nonroot
 USER 65532
