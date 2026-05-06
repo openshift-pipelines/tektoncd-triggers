@@ -119,8 +119,7 @@ const (
 //	'hello mellow'.indexOf('jello')    // returns -1
 //	'hello mellow'.indexOf('', 2)      // returns 2
 //	'hello mellow'.indexOf('ello', 2)  // returns 7
-//	'hello mellow'.indexOf('ello', 20) // returns -1
-//	'hello mellow'.indexOf('ello', -1) // error
+//	'hello mellow'.indexOf('ello', 20) // error
 //
 // # Join
 //
@@ -156,7 +155,6 @@ const (
 //	'hello mellow'.lastIndexOf('ello')     // returns 7
 //	'hello mellow'.lastIndexOf('jello')    // returns -1
 //	'hello mellow'.lastIndexOf('ello', 6)  // returns 1
-//	'hello mellow'.lastIndexOf('ello', 20) // returns -1
 //	'hello mellow'.lastIndexOf('ello', -1) // error
 //
 // # LowerAscii
@@ -286,15 +284,10 @@ const (
 //
 //	'gums'.reverse() // returns 'smug'
 //	'John Smith'.reverse() // returns 'htimS nhoJ'
-//
-// Introduced at version: 4
-//
-// Formatting updated to adhere to https://github.com/google/cel-spec/blob/master/doc/extensions/strings.md.
-//
-// <string>.format(<list>) -> <string>
 func Strings(options ...StringsOption) cel.EnvOption {
 	s := &stringLib{
-		version: math.MaxUint32,
+		version:        math.MaxUint32,
+		validateFormat: true,
 	}
 	for _, o := range options {
 		s = o(s)
@@ -303,8 +296,9 @@ func Strings(options ...StringsOption) cel.EnvOption {
 }
 
 type stringLib struct {
-	locale  string
-	version uint32
+	locale         string
+	version        uint32
+	validateFormat bool
 }
 
 // LibraryName implements the SingletonLibrary interface method.
@@ -318,8 +312,6 @@ type StringsOption func(*stringLib) *stringLib
 // StringsLocale configures the library with the given locale. The locale tag will
 // be checked for validity at the time that EnvOptions are configured. If this option
 // is not passed, string.format will behave as if en_US was passed as the locale.
-//
-// If StringsVersion is greater than or equal to 4, this option is ignored.
 func StringsLocale(locale string) StringsOption {
 	return func(sl *stringLib) *stringLib {
 		sl.locale = locale
@@ -346,9 +338,10 @@ func StringsVersion(version uint32) StringsOption {
 // StringsValidateFormatCalls validates type-checked ASTs to ensure that string.format() calls have
 // valid formatting clauses and valid argument types for each clause.
 //
-// Deprecated
+// Enabled by default.
 func StringsValidateFormatCalls(value bool) StringsOption {
 	return func(s *stringLib) *stringLib {
+		s.validateFormat = value
 		return s
 	}
 }
@@ -356,7 +349,7 @@ func StringsValidateFormatCalls(value bool) StringsOption {
 // CompileOptions implements the Library interface method.
 func (lib *stringLib) CompileOptions() []cel.EnvOption {
 	formatLocale := "en_US"
-	if lib.version < 4 && lib.locale != "" {
+	if lib.locale != "" {
 		// ensure locale is properly-formed if set
 		_, err := language.Parse(lib.locale)
 		if err != nil {
@@ -471,29 +464,21 @@ func (lib *stringLib) CompileOptions() []cel.EnvOption {
 				}))),
 	}
 	if lib.version >= 1 {
-		if lib.version >= 4 {
-			opts = append(opts, cel.Function("format",
-				cel.MemberOverload("string_format", []*cel.Type{cel.StringType, cel.ListType(cel.DynType)}, cel.StringType,
-					cel.FunctionBinding(func(args ...ref.Val) ref.Val {
-						s := string(args[0].(types.String))
-						formatArgs := args[1].(traits.Lister)
-						return stringOrError(parseFormatStringV2(s, &stringFormatterV2{}, &stringArgList{formatArgs}))
-					}))))
-		} else {
-			opts = append(opts, cel.Function("format",
-				cel.MemberOverload("string_format", []*cel.Type{cel.StringType, cel.ListType(cel.DynType)}, cel.StringType,
-					cel.FunctionBinding(func(args ...ref.Val) ref.Val {
-						s := string(args[0].(types.String))
-						formatArgs := args[1].(traits.Lister)
-						return stringOrError(parseFormatString(s, &stringFormatter{}, &stringArgList{formatArgs}, formatLocale))
-					}))))
-		}
-		opts = append(opts,
+		opts = append(opts, cel.Function("format",
+			cel.MemberOverload("string_format", []*cel.Type{cel.StringType, cel.ListType(cel.DynType)}, cel.StringType,
+				cel.FunctionBinding(func(args ...ref.Val) ref.Val {
+					s := string(args[0].(types.String))
+					formatArgs := args[1].(traits.Lister)
+					return stringOrError(parseFormatString(s, &stringFormatter{}, &stringArgList{formatArgs}, formatLocale))
+				}))),
 			cel.Function("strings.quote", cel.Overload("strings_quote", []*cel.Type{cel.StringType}, cel.StringType,
 				cel.UnaryBinding(func(str ref.Val) ref.Val {
 					s := str.(types.String)
 					return stringOrError(quote(string(s)))
-				}))))
+				}))),
+
+			cel.ASTValidators(stringFormatValidator{}))
+
 	}
 	if lib.version >= 2 {
 		opts = append(opts,
@@ -535,19 +520,15 @@ func (lib *stringLib) CompileOptions() []cel.EnvOption {
 	if lib.version >= 3 {
 		opts = append(opts,
 			cel.Function("reverse",
-				cel.MemberOverload("string_reverse", []*cel.Type{cel.StringType}, cel.StringType,
+				cel.MemberOverload("reverse", []*cel.Type{cel.StringType}, cel.StringType,
 					cel.UnaryBinding(func(str ref.Val) ref.Val {
 						s := str.(types.String)
 						return stringOrError(reverse(string(s)))
 					}))),
 		)
 	}
-	if lib.version >= 1 {
-		if lib.version >= 4 {
-			opts = append(opts, cel.ASTValidators(stringFormatValidatorV2{}))
-		} else {
-			opts = append(opts, cel.ASTValidators(stringFormatValidator{}))
-		}
+	if lib.validateFormat {
+		opts = append(opts, cel.ASTValidators(stringFormatValidator{}))
 	}
 	return opts
 }
@@ -580,12 +561,8 @@ func indexOfOffset(str, substr string, offset int64) (int64, error) {
 	off := int(offset)
 	runes := []rune(str)
 	subrunes := []rune(substr)
-	if off < 0 {
+	if off < 0 || off >= len(runes) {
 		return -1, fmt.Errorf("index out of range: %d", off)
-	}
-	// If the offset exceeds the length, return -1 rather than error.
-	if off >= len(runes) {
-		return -1, nil
 	}
 	for i := off; i < len(runes)-(len(subrunes)-1); i++ {
 		found := true
@@ -607,10 +584,6 @@ func lastIndexOf(str, substr string) (int64, error) {
 	if substr == "" {
 		return int64(len(runes)), nil
 	}
-
-	if len(str) < len(substr) {
-		return -1, nil
-	}
 	return lastIndexOfOffset(str, substr, int64(len(runes)-1))
 }
 
@@ -621,12 +594,8 @@ func lastIndexOfOffset(str, substr string, offset int64) (int64, error) {
 	off := int(offset)
 	runes := []rune(str)
 	subrunes := []rune(substr)
-	if off < 0 {
+	if off < 0 || off >= len(runes) {
 		return -1, fmt.Errorf("index out of range: %d", off)
-	}
-	// If the offset is far greater than the length return -1
-	if off >= len(runes) {
-		return -1, nil
 	}
 	if off > len(runes)-len(subrunes) {
 		off = len(runes) - len(subrunes)

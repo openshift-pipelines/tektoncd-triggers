@@ -106,8 +106,8 @@ func (ac *reconciler) Admit(ctx context.Context, request *admissionv1.AdmissionR
 func (ac *reconciler) decodeRequestAndPrepareContext(
 	ctx context.Context,
 	req *admissionv1.AdmissionRequest,
-	gvk schema.GroupVersionKind,
-) (context.Context, resourcesemantics.GenericCRD, error) {
+	gvk schema.GroupVersionKind) (context.Context, resourcesemantics.GenericCRD, error) {
+
 	logger := logging.FromContext(ctx)
 	handler, ok := ac.handlers[gvk]
 	if !ok {
@@ -160,8 +160,7 @@ func (ac *reconciler) decodeRequestAndPrepareContext(
 	return ctx, newObj, nil
 }
 
-//nolint:stylecheck
-func validate(ctx context.Context, resource resourcesemantics.GenericCRD, req *admissionv1.AdmissionRequest) (err error, warn []error) {
+func validate(ctx context.Context, resource resourcesemantics.GenericCRD, req *admissionv1.AdmissionRequest) (err error, warn []error) { //nolint
 	logger := logging.FromContext(ctx)
 
 	// Only run validation for supported create and update validation.
