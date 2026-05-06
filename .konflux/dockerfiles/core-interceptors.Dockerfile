@@ -24,14 +24,14 @@ COPY --from=builder /tmp/interceptors /ko-app/interceptors
 COPY head ${KO_DATA_PATH}/HEAD
 
 LABEL \
-    com.redhat.component="openshift-pipelines-triggers-core-interceptors-rhel8-container" \
+    com.redhat.component="openshift-pipelines-triggers-core-interceptors-rhel9-container" \
     cpe="cpe:/a:redhat:openshift_pipelines:1.15::el9" \
     description="Red Hat OpenShift Pipelines tektoncd-triggers core-interceptors" \
     io.k8s.description="Red Hat OpenShift Pipelines tektoncd-triggers core-interceptors" \
     io.k8s.display-name="Red Hat OpenShift Pipelines tektoncd-triggers core-interceptors" \
     io.openshift.tags="tekton,openshift,tektoncd-triggers,core-interceptors" \
     maintainer="pipelines-extcomm@redhat.com" \
-    name="openshift-pipelines/pipelines-triggers-core-interceptors-rhel8" \
+    name="openshift-pipelines/pipelines-triggers-core-interceptors-rhel9" \
     summary="Red Hat OpenShift Pipelines tektoncd-triggers core-interceptors" \
     version="v1.15.5"
 
