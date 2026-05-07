@@ -1,5 +1,5 @@
 # Rebuild trigger: 1.15.4 release 2026-01-19
-ARG GO_BUILDER=registry.access.redhat.com/ubi9/go-toolset:1.25
+ARG GO_BUILDER=registry.access.redhat.com/ubi8/go-toolset:latest
 ARG RUNTIME=registry.access.redhat.com/ubi9/ubi-minimal:latest
 
 FROM $GO_BUILDER AS builder
@@ -24,14 +24,14 @@ COPY --from=builder /tmp/controller /ko-app/controller
 COPY head ${KO_DATA_PATH}/HEAD
 
 LABEL \
-    com.redhat.component="openshift-pipelines-triggers-controller-rhel9-container" \
+    com.redhat.component="openshift-pipelines-triggers-controller-rhel8-container" \
     cpe="cpe:/a:redhat:openshift_pipelines:1.15::el9" \
     description="Red Hat OpenShift Pipelines tektoncd-triggers controller" \
     io.k8s.description="Red Hat OpenShift Pipelines tektoncd-triggers controller" \
     io.k8s.display-name="Red Hat OpenShift Pipelines tektoncd-triggers controller" \
     io.openshift.tags="tekton,openshift,tektoncd-triggers,controller" \
     maintainer="pipelines-extcomm@redhat.com" \
-    name="openshift-pipelines/pipelines-triggers-controller-rhel9" \
+    name="openshift-pipelines/pipelines-triggers-controller-rhel8" \
     summary="Red Hat OpenShift Pipelines tektoncd-triggers controller" \
     version="v1.15.5"
 
