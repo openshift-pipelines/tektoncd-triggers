@@ -33,7 +33,7 @@ LABEL \
     maintainer="pipelines-extcomm@redhat.com" \
     name="openshift-pipelines/pipelines-triggers-controller-rhel9" \
     summary="Red Hat OpenShift Pipelines tektoncd-triggers controller" \
-    version="vlatest"
+    version="latest"
 
 RUN groupadd -r -g 65532 nonroot && useradd --no-log-init -r -u 65532 -g nonroot nonroot
 USER 65532
