@@ -35,10 +35,9 @@ spec:
     value: .konflux/dockerfiles/eventlistenersink.Dockerfile
   - name: additional-tags
     value:
-      - "v1.22.0"
+      - "v1.22.1"
   - name: prefetch-input
-    value: |
-      {"type": "rpm", "path": ".konflux/rpms"}
+    value: |{"type": "rpm", "path": ".konflux/rpms"}
   pipelineRef:
     name: docker-build-ta
   taskRunTemplate:

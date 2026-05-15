@@ -33,7 +33,7 @@ LABEL \
     maintainer="pipelines-extcomm@redhat.com" \
     name="openshift-pipelines/pipelines-triggers-eventlistenersink-rhel9" \
     summary="Red Hat OpenShift Pipelines tektoncd-triggers eventlistenersink" \
-    version="v1.22.0"
+    version="v1.22.1"
 
 RUN groupadd -r -g 65532 nonroot && useradd --no-log-init -r -u 65532 -g nonroot nonroot
 USER 65532
