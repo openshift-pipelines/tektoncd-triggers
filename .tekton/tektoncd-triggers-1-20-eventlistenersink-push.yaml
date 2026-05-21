@@ -39,6 +39,11 @@ spec:
   - name: prefetch-input
     value: |
       {"type": "rpm", "path": ".konflux/rpms"}
+  - name: repo-name
+    value: "tektoncd-triggers"
+  - name: slack-group-ids
+    value:
+      - "S051731DAM7"
   pipelineRef:
     name: docker-build-ta
   taskRunTemplate:
