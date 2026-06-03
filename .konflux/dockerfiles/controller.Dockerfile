@@ -24,16 +24,16 @@ COPY --from=builder /tmp/controller /ko-app/controller
 COPY head ${KO_DATA_PATH}/HEAD
 
 LABEL \
-    com.redhat.component="openshift-pipelines-triggers-controller-rhel9-container" \
+    com.redhat.component="openshift-pipelines-triggers-controller-rhel10-container" \
     cpe="cpe:/a:redhat:openshift_pipelines:nightly::el9" \
     description="Red Hat OpenShift Pipelines tektoncd-triggers controller" \
     io.k8s.description="Red Hat OpenShift Pipelines tektoncd-triggers controller" \
     io.k8s.display-name="Red Hat OpenShift Pipelines tektoncd-triggers controller" \
     io.openshift.tags="tekton,openshift,tektoncd-triggers,controller" \
     maintainer="pipelines-extcomm@redhat.com" \
-    name="openshift-pipelines/pipelines-triggers-controller-rhel9" \
+    name="openshift-pipelines/pipelines-triggers-controller-rhel10" \
     summary="Red Hat OpenShift Pipelines tektoncd-triggers controller" \
-    version="latest"
+    version="nightly"
 
 RUN groupadd -r -g 65532 nonroot && useradd --no-log-init -r -u 65532 -g nonroot nonroot
 USER 65532
