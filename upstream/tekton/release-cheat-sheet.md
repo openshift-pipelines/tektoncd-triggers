@@ -80,9 +80,9 @@ the triggers repo, a terminal window and a text editor.
    NAME                    VALUE
    commit-sha                 6ea31d92a97420d4b7af94745c45b02447ceaa19
    release-file               https://infra.tekton.dev/tekton-releases/triggers/previous/v0.13.0/release.yaml
-   release-file-no-tag        https://infra.tekton.dev/tekton-releases/triggers/previous/v0.13.0/release.notag.yaml
+   release-file-no-tag        https://infra.tekton.dev/tekton-releases/triggers/previous/v0.13.0/release.notags.yaml
    interceptors-file          https://infra.tekton.dev/tekton-releases/triggers/previous/v0.13.0/interceptors.yaml
-   interceptors-file-no-tag   https://infra.tekton.dev/tekton-releases/triggers/previous/v0.13.0/interceptors.notag.yaml
+   interceptors-file-no-tag   https://infra.tekton.dev/tekton-releases/triggers/previous/v0.13.0/interceptors.notags.yaml
 
    (...)
    ```
@@ -103,9 +103,20 @@ the triggers repo, a terminal window and a text editor.
 
     ```bash
     RELEASE_FILE=https://infra.tekton.dev/tekton-releases/triggers/previous/${VERSION_TAG}/release.yaml
-    CONTROLLER_IMAGE_SHA=$(curl $RELEASE_FILE | sed -n 's/"//g;s/.*ghcr\.io.*controller.*@//p;')
+    CONTROLLER_IMAGE_SHA=$(curl -L $RELEASE_FILE | sed -n 's/"//g;s/.*ghcr\.io.*controller.*@//p;')
     REKOR_UUID=$(rekor-cli search --sha $CONTROLLER_IMAGE_SHA | grep -v Found | head -1)
     echo -e "CONTROLLER_IMAGE_SHA: ${CONTROLLER_IMAGE_SHA}\nREKOR_UUID: ${REKOR_UUID}"
+    ```
+
+    1. Create a pod template file to ensure correct permissions for OCI CLI:
+
+    ```bash
+    cat <<EOF > pod-template.yaml
+    securityContext:
+      fsGroup: 65532
+      runAsNonRoot: true
+      runAsUser: 65532
+    EOF
     ```
 
     1. Execute the Draft Release task.
@@ -114,18 +125,16 @@ the triggers repo, a terminal window and a text editor.
     tkn --context dogfooding pipeline start \
         --workspace name=shared,volumeClaimTemplateFile=workspace-template.yaml \
         --workspace name=credentials,secret=oci-release-secret \
+        --pod-template pod-template.yaml \
         -p package="${TEKTON_PACKAGE}" \
+        -p repo-name="triggers" \
         -p git-revision="${TRIGGERS_RELEASE_GIT_SHA}" \
         -p release-tag="${VERSION_TAG}" \
         -p previous-release-tag="${TRIGGERS_OLD_VERSION}" \
         -p release-name="Tekton Triggers" \
-        -p bucket="tekton-releases/triggers" \
+        -p bucket="tekton-releases" \
         -p rekor-uuid="$REKOR_UUID" \
-        release-draft
-    ```
-    ```bash
-    NOTE: `release-draft` pipeline is for GCS we need to replace this with the OCI pipeline once its present on the Oracle cluster
-    TODO #savita will change this as soon as Pipeline is available and update the readme and remove this note       
+        release-draft-oci
     ```
 
     1. Watch logs of create-draft-release
@@ -135,7 +144,7 @@ the triggers repo, a terminal window and a text editor.
       1. Double-check that the list of commits here matches your expectations
          for the release. You might need to remove incorrect commits or copy/paste commits
          from the release branch. Refer to previous releases to confirm the expected format.
-      1. In the section **Installation one-liner**, add the install instruction for interceptors also. 
+      1. In the section **Installation one-liner**, add the install instruction for interceptors also.
          ```bash
             kubectl apply -f https://infra.tekton.dev/tekton-releases/triggers/previous/${VERSION_TAG}/interceptors.yaml
          ```
