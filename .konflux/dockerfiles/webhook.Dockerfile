@@ -25,7 +25,7 @@ COPY head ${KO_DATA_PATH}/HEAD
 
 LABEL \
     com.redhat.component="openshift-pipelines-triggers-webhook-rhel9-container" \
-    cpe="cpe:/a:redhat:openshift_pipelines:next::el9" \
+    cpe="cpe:/a:redhat:openshift_pipelines:next::" \
     description="Red Hat OpenShift Pipelines tektoncd-triggers webhook" \
     io.k8s.description="Red Hat OpenShift Pipelines tektoncd-triggers webhook" \
     io.k8s.display-name="Red Hat OpenShift Pipelines tektoncd-triggers webhook" \
