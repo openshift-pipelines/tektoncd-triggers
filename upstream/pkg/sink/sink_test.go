@@ -21,6 +21,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -1727,6 +1728,122 @@ func TestExecuteInterceptor_ExtensionChaining(t *testing.T) {
 
 	if diff := cmp.Diff(iresp.Extensions, wantExtensions); diff != "" {
 		t.Errorf("Extensions: -want +got: %s", diff)
+	}
+}
+
+// rawBodyInterceptor stores the raw request body and Content-Type header it received.
+type rawBodyInterceptor struct {
+	body        []byte
+	contentType string
+}
+
+func (f *rawBodyInterceptor) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		_, _ = w.Write([]byte(err.Error()))
+		return
+	}
+	defer r.Body.Close()
+	f.body = body
+	f.contentType = r.Header.Get("Content-Type")
+	w.Header().Set("Content-Type", "application/json")
+	_, _ = w.Write([]byte(`{}`))
+}
+
+// TestExecuteInterceptor_WebhookFirstGetsRawURLEncodedBody tests that a
+// deprecated webhook interceptor placed first in the chain receives the
+// original url-encoded request body rather than a pre-parsed JSON
+// representation. See https://github.com/tektoncd/triggers/issues/1886.
+func TestExecuteInterceptor_WebhookFirstGetsRawURLEncodedBody(t *testing.T) {
+	webhookInterceptorName := "foo"
+	rawServer := &rawBodyInterceptor{}
+	s, _ := getSinkAssets(t, test.Resources{}, "", rawServer)
+
+	trigger := triggersv1beta1.Trigger{
+		Spec: triggersv1beta1.TriggerSpec{
+			Interceptors: []*triggersv1beta1.EventInterceptor{{
+				Webhook: &triggersv1beta1.WebhookInterceptor{
+					ObjectRef: &corev1.ObjectReference{
+						APIVersion: "v1",
+						Kind:       "Service",
+						Name:       webhookInterceptorName,
+					},
+				},
+			}},
+		},
+	}
+
+	rawBody := "token=abc&user_id=123&text=hello+world"
+	req, err := http.NewRequest(http.MethodPost, "/", nil)
+	if err != nil {
+		t.Fatalf("http.NewRequest: %v", err)
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	if _, _, _, err := s.ExecuteTriggerInterceptors(trigger, req, []byte(rawBody), s.Logger, eventID, map[string]interface{}{}); err != nil {
+		t.Fatalf("executeInterceptors: %v", err)
+	}
+
+	if got := string(rawServer.body); got != rawBody {
+		t.Errorf("Webhook interceptor body: want %q got %q", rawBody, got)
+	}
+}
+
+// TestExecuteInterceptor_WebhookFirstWithExtensionsGetsJSONBody tests that when
+// extensions (e.g. from a preceding TriggerGroup interceptor) are present, the
+// url-encoded body is still converted to JSON before being sent to a webhook-first
+// interceptor, since merging extensions into the body requires a JSON body.
+func TestExecuteInterceptor_WebhookFirstWithExtensionsGetsJSONBody(t *testing.T) {
+	webhookInterceptorName := "foo"
+	rawServer := &rawBodyInterceptor{}
+	s, _ := getSinkAssets(t, test.Resources{}, "", rawServer)
+
+	trigger := triggersv1beta1.Trigger{
+		Spec: triggersv1beta1.TriggerSpec{
+			Interceptors: []*triggersv1beta1.EventInterceptor{{
+				Webhook: &triggersv1beta1.WebhookInterceptor{
+					ObjectRef: &corev1.ObjectReference{
+						APIVersion: "v1",
+						Kind:       "Service",
+						Name:       webhookInterceptorName,
+					},
+				},
+			}},
+		},
+	}
+
+	rawBody := "token=abc&user_id=123&text=hello+world"
+	req, err := http.NewRequest(http.MethodPost, "/", nil)
+	if err != nil {
+		t.Fatalf("http.NewRequest: %v", err)
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	extensions := map[string]interface{}{"added_field": "val1"}
+	if _, _, _, err := s.ExecuteTriggerInterceptors(trigger, req, []byte(rawBody), s.Logger, eventID, extensions); err != nil {
+		t.Fatalf("executeInterceptors: %v", err)
+	}
+
+	var gotBody map[string]interface{}
+	if err := json.Unmarshal(rawServer.body, &gotBody); err != nil {
+		t.Fatalf("expected webhook interceptor to receive JSON body when extensions are present, got %q: %v", rawServer.body, err)
+	}
+
+	// The original form fields must survive the JSON conversion: sjson.SetRawBytes
+	// silently builds a fresh JSON object from a non-JSON base, so a naive fix that
+	// skips the conversion (but still calls extendBodyWithExtensions) would lose them
+	// rather than error out.
+	wantBody := map[string]interface{}{
+		"token":   []interface{}{"abc"},
+		"user_id": []interface{}{"123"},
+		"text":    []interface{}{"hello world"},
+		"extensions": map[string]interface{}{
+			"added_field": "val1",
+		},
+	}
+	if diff := cmp.Diff(wantBody, gotBody); diff != "" {
+		t.Errorf("body: -want +got: %s", diff)
 	}
 }
 
