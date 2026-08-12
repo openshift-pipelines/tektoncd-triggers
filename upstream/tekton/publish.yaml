@@ -93,7 +93,7 @@ spec:
       cp ${DOCKER_CONFIG} /workspace/docker-config.json
 
   - name: run-ko
-    image: ghcr.io/tektoncd/plumbing/ko@sha256:d21b05e426096c01ea026678a94d019f860e5ba04929b5fd2dd8bb0aaccf31d2
+    image: ghcr.io/tektoncd/plumbing/ko@sha256:35827f1973ab7a324d3da7e94eef3694a2c564ccdad482bce53bc10717779c2e
     env:
     - name: KO_DOCKER_REPO
       value: $(params.imageRegistry)/$(params.imageRegistryPath)
@@ -122,7 +122,7 @@ spec:
       tar cfz ${TMPDIR}/source.tar.gz vendor/
       for d in cmd/*; do
         if [ -d ${d}/kodata/ ]; then
-          ln -s ${TMPDIR}/source.tar.gz ${d}/kodata/
+          cp ${TMPDIR}/source.tar.gz ${d}/kodata/
         fi
       done
 
