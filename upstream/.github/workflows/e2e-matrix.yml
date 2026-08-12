@@ -1,0 +1,73 @@
+name: Triggers Integration
+
+on: [workflow_call]
+
+defaults:
+  run:
+    shell: bash
+
+permissions:
+  contents: read
+
+jobs:
+  e2e-tests:
+    concurrency:
+      group: ${{ github.workflow }}-e2e-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: true
+    name: e2e tests
+    runs-on: ubuntu-latest
+    env:
+      KO_DOCKER_REPO: registry.local:5000/tekton
+      CLUSTER_DOMAIN: c${{ github.run_id }}.local
+      ARTIFACTS: ${{ github.workspace }}/artifacts
+      KOCACHE: /tmp/ko-cache
+      # registry.local:5000 is a plain-HTTP KinD registry; tell ko to skip TLS
+      # so that both image pushes and SBOM writes (ko >=v0.19) use plain HTTP.
+      KO_FLAGS: --insecure-registry
+
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        with:
+          go-version-file: "go.mod"
+      - name: Cache ko build cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: /tmp/ko-cache
+          key: ${{ runner.os }}-${{ runner.arch }}-ko-${{ hashFiles('go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-ko-
+      - uses: ko-build/setup-ko@61b4d1d396f5b2e7d6bb6fefdce3dc38d1a13445 # v0.10
+
+      - name: Install Dependencies
+        working-directory: ./
+        run: |
+          echo '::group:: install go-junit-report'
+          go install github.com/jstemmer/go-junit-report@v0.9.1
+          echo '::endgroup::'
+
+          echo '::group::create required folders'
+          mkdir -p "${ARTIFACTS}"
+          echo '::endgroup::'
+
+          echo "${GOPATH}/bin" >> "$GITHUB_PATH"
+
+      - name: Run Integration tests
+        env:
+          GOTOOLCHAIN: auto
+        run: |
+          ./test/setup-kind.sh \
+            --registry-url $(echo ${KO_DOCKER_REPO} | cut -d'/' -f 1) \
+            --cluster-suffix "${CLUSTER_DOMAIN}" \
+            --nodes 3 \
+            --k8s-version v1.29.x \
+            --e2e-script ./test/gh-e2e-tests.sh \
+            --e2e-env ./test/e2e-tests-kind-prow.env
+
+      - name: Upload test results
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ failure() }}
+        with:
+          path: ${{ env.ARTIFACTS }}
