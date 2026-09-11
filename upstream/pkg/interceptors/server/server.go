@@ -15,7 +15,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/tektoncd/triggers/pkg/apis/config"
 	"github.com/tektoncd/triggers/pkg/apis/triggers/v1alpha1"
 	triggersv1 "github.com/tektoncd/triggers/pkg/apis/triggers/v1beta1"
 	triggersv1alpha1 "github.com/tektoncd/triggers/pkg/client/clientset/versioned/typed/triggers/v1alpha1"
@@ -47,7 +46,6 @@ type keypairReloader struct {
 
 type Server struct {
 	Logger       *zap.SugaredLogger
-	configStore  *config.Store
 	interceptors map[string]triggersv1.InterceptorInterface
 }
 
@@ -59,7 +57,7 @@ func (is *Server) RegisterInterceptor(path string, interceptor triggersv1.Interc
 	is.interceptors[path] = interceptor
 }
 
-func NewWithCoreInterceptors(sg interceptors.SecretGetter, logger *zap.SugaredLogger, configStore *config.Store) (*Server, error) {
+func NewWithCoreInterceptors(sg interceptors.SecretGetter, logger *zap.SugaredLogger) (*Server, error) {
 	i := map[string]triggersv1.InterceptorInterface{
 		"bitbucket": bitbucket.NewInterceptor(sg),
 		"cel":       cel.NewInterceptor(sg),
@@ -75,7 +73,6 @@ func NewWithCoreInterceptors(sg interceptors.SecretGetter, logger *zap.SugaredLo
 	}
 	s := Server{
 		Logger:       logger,
-		configStore:  configStore,
 		interceptors: i,
 	}
 	return &s, nil
@@ -142,12 +139,9 @@ func (is *Server) ExecuteInterceptor(r *http.Request) ([]byte, error) {
 		return nil, badRequest(errors.New("path did not match any interceptors"))
 	}
 
+	// Create a context
 	ctx, cancel := context.WithTimeout(r.Context(), 3*time.Second)
 	defer cancel()
-
-	if is.configStore != nil {
-		ctx = is.configStore.ToContext(ctx)
-	}
 
 	var body bytes.Buffer
 	defer r.Body.Close()
