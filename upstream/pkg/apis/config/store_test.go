@@ -35,9 +35,8 @@ func TestStoreLoadWithContext(t *testing.T) {
 	expectedFeatureFlag, _ := config.NewFeatureFlagsFromConfigMap(defaultConfig)
 
 	expected := &config.Config{
-		Defaults:         expectedDefaults,
-		FeatureFlags:     expectedFeatureFlag,
-		CoreInterceptors: &config.CoreInterceptorsConfig{},
+		Defaults:     expectedDefaults,
+		FeatureFlags: expectedFeatureFlag,
 	}
 
 	store := config.NewStore(logtesting.TestLogger(t))
@@ -65,9 +64,8 @@ func TestFromContextOrDefaults(t *testing.T) {
 		name: "sets to default when context has no config",
 		in:   context.Background(),
 		want: &config.Config{
-			Defaults:         defaults,
-			FeatureFlags:     featureFlags,
-			CoreInterceptors: &config.CoreInterceptorsConfig{},
+			Defaults:     defaults,
+			FeatureFlags: featureFlags,
 		},
 	}, {
 		name: "uses Config from context if present",
