@@ -37,9 +37,8 @@ func TestNewFeatureFlagsFromConfigMap(t *testing.T) {
 		fileName: config.GetFeatureFlagsConfigName(),
 	}, {
 		expectedConfig: &config.FeatureFlags{
-			EnableAPIFields:                              "alpha",
-			LabelsExclusionPattern:                       "^abc-",
-			InterceptorsGitHubUseEnterpriseHostAllowlist: true,
+			EnableAPIFields:        "alpha",
+			LabelsExclusionPattern: "^abc-",
 		},
 		fileName: "feature-flags-all-flags-set",
 	}, {
@@ -105,47 +104,6 @@ func TestNewFeatureFlagsConfigMapErrors(t *testing.T) {
 			cm := test.ConfigMapFromTestFile(t, tc.fileName)
 			if _, err := config.NewFeatureFlagsFromConfigMap(cm); err == nil {
 				t.Error("expected error but received nil")
-			}
-		})
-	}
-}
-
-func TestNewFeatureFlagsFromMap_EnterpriseHostAllowlist(t *testing.T) {
-	for _, tc := range []struct {
-		name string
-		data map[string]string
-		want bool
-	}{{
-		name: "key absent defaults to false",
-		data: map[string]string{},
-		want: false,
-	}, {
-		name: "explicit true",
-		data: map[string]string{
-			"interceptors.github.use-enterprise-host-allowlist": "true",
-		},
-		want: true,
-	}, {
-		name: "explicit false",
-		data: map[string]string{
-			"interceptors.github.use-enterprise-host-allowlist": "false",
-		},
-		want: false,
-	}, {
-		name: "case insensitive True",
-		data: map[string]string{
-			"interceptors.github.use-enterprise-host-allowlist": "True",
-		},
-		want: true,
-	}} {
-		t.Run(tc.name, func(t *testing.T) {
-			flags, err := config.NewFeatureFlagsFromMap(tc.data)
-			if err != nil {
-				t.Fatalf("NewFeatureFlagsFromMap() error = %v", err)
-			}
-			if flags.InterceptorsGitHubUseEnterpriseHostAllowlist != tc.want {
-				t.Errorf("InterceptorsGitHubUseEnterpriseHostAllowlist = %v, want %v",
-					flags.InterceptorsGitHubUseEnterpriseHostAllowlist, tc.want)
 			}
 		})
 	}

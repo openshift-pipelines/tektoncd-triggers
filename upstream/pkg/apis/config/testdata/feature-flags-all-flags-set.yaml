@@ -20,4 +20,3 @@ metadata:
 data:
   enable-api-fields: "alpha"
   labels-exclusion-pattern: "^abc-"
-  interceptors.github.use-enterprise-host-allowlist: "true"
