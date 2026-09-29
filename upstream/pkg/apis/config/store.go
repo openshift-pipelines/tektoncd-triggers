@@ -27,9 +27,8 @@ type cfgKey struct{}
 // Config holds the collection of configurations that we attach to contexts.
 // +k8s:deepcopy-gen=false
 type Config struct {
-	Defaults         *Defaults
-	FeatureFlags     *FeatureFlags
-	CoreInterceptors *CoreInterceptorsConfig
+	Defaults     *Defaults
+	FeatureFlags *FeatureFlags
 }
 
 // FromContext extracts a Config from the provided context.
@@ -49,11 +48,9 @@ func FromContextOrDefaults(ctx context.Context) *Config {
 	}
 	defaults, _ := NewDefaultsFromMap(map[string]string{})
 	featureFlags, _ := NewFeatureFlagsFromMap(map[string]string{})
-	coreInterceptors, _ := NewCoreInterceptorsFromMap(map[string]string{})
 	return &Config{
-		Defaults:         defaults,
-		FeatureFlags:     featureFlags,
-		CoreInterceptors: coreInterceptors,
+		Defaults:     defaults,
+		FeatureFlags: featureFlags,
 	}
 }
 
@@ -76,9 +73,8 @@ func NewStore(logger configmap.Logger, onAfterStore ...func(name string, value i
 			"defaults/features/artifacts",
 			logger,
 			configmap.Constructors{
-				GetFeatureFlagsConfigName():     NewFeatureFlagsFromConfigMap,
-				GetDefaultsConfigName():         NewDefaultsFromConfigMap,
-				GetCoreInterceptorsConfigName(): NewCoreInterceptorsFromConfigMap,
+				GetFeatureFlagsConfigName(): NewFeatureFlagsFromConfigMap,
+				GetDefaultsConfigName():     NewDefaultsFromConfigMap,
 			},
 			onAfterStore...,
 		),
@@ -102,14 +98,9 @@ func (s *Store) Load() *Config {
 	if featureFlags == nil {
 		featureFlags, _ = NewFeatureFlagsFromMap(map[string]string{})
 	}
-	coreInterceptors := s.UntypedLoad(GetCoreInterceptorsConfigName())
-	if coreInterceptors == nil {
-		coreInterceptors, _ = NewCoreInterceptorsFromMap(map[string]string{})
-	}
 
 	return &Config{
-		Defaults:         defaults.(*Defaults).DeepCopy(),
-		FeatureFlags:     featureFlags.(*FeatureFlags).DeepCopy(),
-		CoreInterceptors: coreInterceptors.(*CoreInterceptorsConfig).DeepCopy(),
+		Defaults:     defaults.(*Defaults).DeepCopy(),
+		FeatureFlags: featureFlags.(*FeatureFlags).DeepCopy(),
 	}
 }
