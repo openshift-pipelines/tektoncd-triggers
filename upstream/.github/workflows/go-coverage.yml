@@ -30,12 +30,12 @@ jobs:
 
     steps:
       - name: Harden runner
-        uses: step-security/harden-runner@ab7a9404c0f3da075243ca237b5fac12c98deaa5 # v2.19.3
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
         with:
           egress-policy: audit
 
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           path: ${{ github.workspace }}/src/github.com/tektoncd/triggers
           persist-credentials: false
@@ -52,14 +52,14 @@ jobs:
           echo "Generated coverage profile"
 
       - name: Archive coverage results
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: code-coverage
           path: ${{ github.workspace }}/src/github.com/tektoncd/triggers/coverage.txt
 
       - name: Comment on PR
         if: github.event_name == 'pull_request'
-        uses: fgrosse/go-coverage-report@cbeb2ab2e32591d690337146ba02a911cc566f3f # v1.3.0
+        uses: fgrosse/go-coverage-report@e432de98ee94a276e8f666d25bfd76347665f75b # v1.3.1
         continue-on-error: true # This may fail if artifact on main branch does not exist (first run or expired)
         with:
           coverage-artifact-name: "code-coverage"
