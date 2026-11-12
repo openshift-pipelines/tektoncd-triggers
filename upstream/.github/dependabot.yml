@@ -29,10 +29,6 @@ updates:
           update-types:
             - version-update:semver-major
             - version-update:semver-minor
-      groups:
-        all:
-            patterns:
-                - '*'
       cooldown:
         default-days: 7
         semver-major-days: 30
@@ -54,12 +50,11 @@ updates:
                 - github/codeql-action/*
       cooldown:
         default-days: 7
-        semver-major-days: 30
-        semver-minor-days: 7
-        semver-patch-days: 3
     - package-ecosystem: gomod
       directory: /
       target-branch: release-v0.37.x
+      commit-message:
+        prefix: '[release-v0.37.x]'
       schedule:
         interval: weekly
       labels:
@@ -84,10 +79,6 @@ updates:
           update-types:
             - version-update:semver-major
             - version-update:semver-minor
-      groups:
-        all:
-            patterns:
-                - '*'
       cooldown:
         default-days: 7
         semver-major-days: 30
@@ -96,6 +87,8 @@ updates:
     - package-ecosystem: github-actions
       directory: /
       target-branch: release-v0.37.x
+      commit-message:
+        prefix: '[release-v0.37.x]'
       schedule:
         interval: weekly
       labels:
@@ -115,12 +108,11 @@ updates:
                 - github/codeql-action/*
       cooldown:
         default-days: 7
-        semver-major-days: 30
-        semver-minor-days: 7
-        semver-patch-days: 3
     - package-ecosystem: gomod
       directory: /
       target-branch: release-v0.36.x
+      commit-message:
+        prefix: '[release-v0.36.x]'
       schedule:
         interval: weekly
       labels:
@@ -145,10 +137,6 @@ updates:
           update-types:
             - version-update:semver-major
             - version-update:semver-minor
-      groups:
-        all:
-            patterns:
-                - '*'
       cooldown:
         default-days: 7
         semver-major-days: 30
@@ -157,6 +145,8 @@ updates:
     - package-ecosystem: github-actions
       directory: /
       target-branch: release-v0.36.x
+      commit-message:
+        prefix: '[release-v0.36.x]'
       schedule:
         interval: weekly
       labels:
@@ -176,12 +166,11 @@ updates:
                 - github/codeql-action/*
       cooldown:
         default-days: 7
-        semver-major-days: 30
-        semver-minor-days: 7
-        semver-patch-days: 3
     - package-ecosystem: gomod
       directory: /
       target-branch: release-v0.35.x
+      commit-message:
+        prefix: '[release-v0.35.x]'
       schedule:
         interval: weekly
       labels:
@@ -206,10 +195,6 @@ updates:
           update-types:
             - version-update:semver-major
             - version-update:semver-minor
-      groups:
-        all:
-            patterns:
-                - '*'
       cooldown:
         default-days: 7
         semver-major-days: 30
@@ -218,6 +203,8 @@ updates:
     - package-ecosystem: github-actions
       directory: /
       target-branch: release-v0.35.x
+      commit-message:
+        prefix: '[release-v0.35.x]'
       schedule:
         interval: weekly
       labels:
@@ -237,12 +224,11 @@ updates:
                 - github/codeql-action/*
       cooldown:
         default-days: 7
-        semver-major-days: 30
-        semver-minor-days: 7
-        semver-patch-days: 3
     - package-ecosystem: gomod
       directory: /
       target-branch: release-v0.34.x
+      commit-message:
+        prefix: '[release-v0.34.x]'
       schedule:
         interval: weekly
       labels:
@@ -267,10 +253,6 @@ updates:
           update-types:
             - version-update:semver-major
             - version-update:semver-minor
-      groups:
-        all:
-            patterns:
-                - '*'
       cooldown:
         default-days: 7
         semver-major-days: 30
@@ -279,6 +261,8 @@ updates:
     - package-ecosystem: github-actions
       directory: /
       target-branch: release-v0.34.x
+      commit-message:
+        prefix: '[release-v0.34.x]'
       schedule:
         interval: weekly
       labels:
@@ -298,6 +282,3 @@ updates:
                 - github/codeql-action/*
       cooldown:
         default-days: 7
-        semver-major-days: 30
-        semver-minor-days: 7
-        semver-patch-days: 3
