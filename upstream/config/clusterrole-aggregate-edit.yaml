@@ -25,13 +25,12 @@ rules:
 - apiGroups:
   - triggers.tekton.dev
   resources:
-  - clustertriggerbindings
-  - clusterinterceptors
   - eventlisteners
   - interceptors
   - triggers
   - triggerbindings
   - triggertemplates
+  - scheduledtemplates
   verbs:
   - create
   - delete
