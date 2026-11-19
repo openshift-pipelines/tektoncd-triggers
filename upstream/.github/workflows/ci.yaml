@@ -20,6 +20,7 @@ jobs:
     outputs:
       non-docs: ${{ steps.detect.outputs.non-docs }}
       yaml: ${{ steps.detect.outputs.yaml }}
+      e2e: ${{ steps.detect.outputs.e2e }}
     steps:
     - name: Get base depth
       id: base-depth
@@ -61,8 +62,26 @@ jobs:
             fi
           done <<< "${CHANGED_FILES}"
 
+          E2E='false'
+          while read -r file; do
+            case "$file" in
+              *.md) ;;
+              .codecov.yaml|codecov.yml) ;;
+              .github/workflows/ci.yaml|.github/workflows/e2e-matrix.yml|.github/workflows/microshift.yaml)
+                E2E='true'
+                break
+                ;;
+              .github/workflows/*) ;;
+              *)
+                E2E='true'
+                break
+                ;;
+            esac
+          done <<< "${CHANGED_FILES}"
+
           echo "non-docs=${NON_DOCS}" | tee -a $GITHUB_OUTPUT
           echo "yaml=${YAML}" | tee -a $GITHUB_OUTPUT
+          echo "e2e=${E2E}" | tee -a $GITHUB_OUTPUT
         fi
 
   build:
@@ -74,7 +93,7 @@ jobs:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
       with:
         persist-credentials: false
-    - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16  # v6.5.0
+    - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e  # v7.0.0
       with:
         go-version-file: "go.mod"
     - name: build
@@ -92,7 +111,7 @@ jobs:
       with:
         fetch-depth: 0
         persist-credentials: false
-    - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16  # v6.5.0
+    - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e  # v7.0.0
       with:
         go-version-file: "go.mod"
     - name: gofmt
@@ -107,7 +126,8 @@ jobs:
       uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a  # v9.3.0
       if: ${{ needs.changes.outputs.non-docs == 'true' }}
       with:
-        version: v2.12.2
+        version: v2.15.0
+        install-mode: goinstall
         args: --new-from-merge-base=origin/${{ github.base_ref }} --timeout=10m
     - name: yamllint
       if: ${{ needs.changes.outputs.yaml == 'true' }}
@@ -127,7 +147,7 @@ jobs:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
       with:
         persist-credentials: false
-    - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16  # v6.5.0
+    - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e  # v7.0.0
       with:
         go-version-file: "go.mod"
     - name: unit-test
@@ -141,7 +161,7 @@ jobs:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
       with:
         persist-credentials: false
-    - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16  # v6.5.0
+    - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e  # v7.0.0
       with:
         go-version-file: "go.mod"
     - name: generated
@@ -157,7 +177,7 @@ jobs:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
       with:
         persist-credentials: false
-    - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16  # v6.5.0
+    - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e  # v7.0.0
       with:
         go-version-file: "go.mod"
     - name: Cache ko build cache
@@ -173,7 +193,8 @@ jobs:
           KO_DOCKER_REPO=example.com ko resolve --platform=all --push=false -R -f config 1>/dev/null
           KO_DOCKER_REPO=example.com ko resolve --platform=all --push=false -f config/interceptors 1>/dev/null
   e2e-tests:
-    needs: [build]
+    needs: [changes, build]
+    if: ${{ needs.changes.outputs.e2e == 'true' }}
     uses: ./.github/workflows/e2e-matrix.yml
 
   ci-summary:

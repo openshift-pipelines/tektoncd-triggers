@@ -32,13 +32,25 @@ Manifests are published to cloud object-storage as well as
 verified through the [public key][chains-public-key] hosted by the Tekton Chains
 project.
 
+Releases are automated using [Pipelines-as-Code][pac]. The release PipelineRuns
+are defined in the [`.tekton/`][tekton-dir] directory and triggered automatically
+on release branch creation (initial releases) or via a weekly cron /
+manual `workflow_dispatch` (patch releases).
+
 Further documentation available:
 
-- The Tekton Triggers [release process][tekton-releases-docs]
+- The Tekton Triggers [release cheat sheet][tekton-releases-docs]
 - [Installing Tekton][tekton-installation]
 - Standard for [release notes][release-notes-standards]
 
 ## Release
+
+### v0.37 (LTS)
+
+- **Latest Release**: [v0.37.0][v0-37-0] (2026-08-06) ([docs][v0-37-0-docs], [examples][v0-37-0-examples])
+- **Initial Release**: [v0.37.0][v0-37-0] (2026-08-06)
+- **End of Life**: 2027-08-06
+- **Patch Releases**: [v0.37.0][v0-37-0]
 
 ### v0.36 (LTS)
 
@@ -61,13 +73,6 @@ Further documentation available:
 - **End of Life**: 2026-08-11
 - **Patch Releases**: [v0.34.0][v0-34-0]
 
-### v0.33 (LTS)
-
-- **Latest Release**: [v0.33.0][v0-33-0] (2025-08-11) ([docs][v0-33-0-docs], [examples][v0-33-0-examples])
-- **Initial Release**: [v0.33.0][v0-33-0] (2025-08-11)
-- **End of Life**: 2026-08-11
-- **Patch Releases**: [v0.33.0][v0-33-0]
-
 ### Required Kubernetes Version
 
 - Starting from the v0.23.x release of Triggers: **Kubernetes version 1.24 or later**
@@ -83,14 +88,13 @@ Older releases are EOL and available on [GitHub][tekton-triggers-releases].
 [tekton-chains]: https://github.com/tektoncd/chains
 [tekton-triggers-releases]: https://github.com/tektoncd/triggers/releases
 [chains-public-key]: https://github.com/tektoncd/chains/blob/main/tekton.pub
-[tekton-releases-docs]: tekton/README.md
+[tekton-releases-docs]: tekton/release-cheat-sheet.md
 [tekton-installation]: docs/install.md
 [release-notes-standards]:
     https://github.com/tektoncd/community/blob/main/standards.md#release-notes
+[pac]: https://pipelinesascode.com
+[tekton-dir]: .tekton/
 
-[v0-33-0]: https://github.com/tektoncd/triggers/releases/tag/v0.33.0
-[v0-33-0-docs]: https://github.com/tektoncd/triggers/tree/v0.33.0/docs#tekton-triggers
-[v0-33-0-examples]: https://github.com/tektoncd/triggers/tree/v0.33.0/examples#examples
 [v0-34-0]: https://github.com/tektoncd/triggers/releases/tag/v0.34.0
 [v0-34-0-docs]: https://github.com/tektoncd/triggers/tree/v0.34.0/docs#tekton-triggers
 [v0-34-0-examples]: https://github.com/tektoncd/triggers/tree/v0.34.0/examples#examples
@@ -100,3 +104,6 @@ Older releases are EOL and available on [GitHub][tekton-triggers-releases].
 [v0-36-0]: https://github.com/tektoncd/triggers/releases/tag/v0.36.0
 [v0-36-0-docs]: https://github.com/tektoncd/triggers/tree/v0.36.0/docs#tekton-triggers
 [v0-36-0-examples]: https://github.com/tektoncd/triggers/tree/v0.36.0/examples#examples
+[v0-37-0]: https://github.com/tektoncd/triggers/releases/tag/v0.37.0
+[v0-37-0-docs]: https://github.com/tektoncd/triggers/tree/v0.37.0/docs#tekton-triggers
+[v0-37-0-examples]: https://github.com/tektoncd/triggers/tree/v0.37.0/examples#examples
