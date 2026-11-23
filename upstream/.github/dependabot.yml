@@ -29,10 +29,6 @@ updates:
           update-types:
             - version-update:semver-major
             - version-update:semver-minor
-      groups:
-        all:
-            patterns:
-                - '*'
       cooldown:
         default-days: 7
         semver-major-days: 30
@@ -47,14 +43,134 @@ updates:
         - dependencies
         - release-note-none
         - kind/misc
+      groups:
+        codeql-action:
+            patterns:
+                - github/codeql-action
+                - github/codeql-action/*
+      cooldown:
+        default-days: 7
+    - package-ecosystem: gomod
+      directory: /
+      target-branch: release-v0.37.x
+      commit-message:
+        prefix: '[release-v0.37.x]'
+      schedule:
+        interval: weekly
+      labels:
+        - ok-to-test
+        - dependencies
+        - release-note-none
+        - kind/misc
+      ignore:
+        - dependency-name: k8s.io/*
+          update-types:
+            - version-update:semver-major
+            - version-update:semver-minor
+        - dependency-name: knative.dev/*
+          update-types:
+            - version-update:semver-major
+            - version-update:semver-minor
+        - dependency-name: go.opentelemetry.io/*
+          update-types:
+            - version-update:semver-major
+            - version-update:semver-minor
+        - dependency-name: '*'
+          update-types:
+            - version-update:semver-major
+            - version-update:semver-minor
       cooldown:
         default-days: 7
         semver-major-days: 30
         semver-minor-days: 7
         semver-patch-days: 3
+    - package-ecosystem: github-actions
+      directory: /
+      target-branch: release-v0.37.x
+      commit-message:
+        prefix: '[release-v0.37.x]'
+      schedule:
+        interval: weekly
+      labels:
+        - ok-to-test
+        - dependencies
+        - release-note-none
+        - kind/misc
+      ignore:
+        - dependency-name: '*'
+          update-types:
+            - version-update:semver-major
+            - version-update:semver-minor
+      groups:
+        codeql-action:
+            patterns:
+                - github/codeql-action
+                - github/codeql-action/*
+      cooldown:
+        default-days: 7
+    - package-ecosystem: gomod
+      directory: /
+      target-branch: release-v0.36.x
+      commit-message:
+        prefix: '[release-v0.36.x]'
+      schedule:
+        interval: weekly
+      labels:
+        - ok-to-test
+        - dependencies
+        - release-note-none
+        - kind/misc
+      ignore:
+        - dependency-name: k8s.io/*
+          update-types:
+            - version-update:semver-major
+            - version-update:semver-minor
+        - dependency-name: knative.dev/*
+          update-types:
+            - version-update:semver-major
+            - version-update:semver-minor
+        - dependency-name: go.opentelemetry.io/*
+          update-types:
+            - version-update:semver-major
+            - version-update:semver-minor
+        - dependency-name: '*'
+          update-types:
+            - version-update:semver-major
+            - version-update:semver-minor
+      cooldown:
+        default-days: 7
+        semver-major-days: 30
+        semver-minor-days: 7
+        semver-patch-days: 3
+    - package-ecosystem: github-actions
+      directory: /
+      target-branch: release-v0.36.x
+      commit-message:
+        prefix: '[release-v0.36.x]'
+      schedule:
+        interval: weekly
+      labels:
+        - ok-to-test
+        - dependencies
+        - release-note-none
+        - kind/misc
+      ignore:
+        - dependency-name: '*'
+          update-types:
+            - version-update:semver-major
+            - version-update:semver-minor
+      groups:
+        codeql-action:
+            patterns:
+                - github/codeql-action
+                - github/codeql-action/*
+      cooldown:
+        default-days: 7
     - package-ecosystem: gomod
       directory: /
       target-branch: release-v0.35.x
+      commit-message:
+        prefix: '[release-v0.35.x]'
       schedule:
         interval: weekly
       labels:
@@ -79,10 +195,6 @@ updates:
           update-types:
             - version-update:semver-major
             - version-update:semver-minor
-      groups:
-        all:
-            patterns:
-                - '*'
       cooldown:
         default-days: 7
         semver-major-days: 30
@@ -91,6 +203,8 @@ updates:
     - package-ecosystem: github-actions
       directory: /
       target-branch: release-v0.35.x
+      commit-message:
+        prefix: '[release-v0.35.x]'
       schedule:
         interval: weekly
       labels:
@@ -103,14 +217,18 @@ updates:
           update-types:
             - version-update:semver-major
             - version-update:semver-minor
+      groups:
+        codeql-action:
+            patterns:
+                - github/codeql-action
+                - github/codeql-action/*
       cooldown:
         default-days: 7
-        semver-major-days: 30
-        semver-minor-days: 7
-        semver-patch-days: 3
     - package-ecosystem: gomod
       directory: /
       target-branch: release-v0.34.x
+      commit-message:
+        prefix: '[release-v0.34.x]'
       schedule:
         interval: weekly
       labels:
@@ -135,10 +253,6 @@ updates:
           update-types:
             - version-update:semver-major
             - version-update:semver-minor
-      groups:
-        all:
-            patterns:
-                - '*'
       cooldown:
         default-days: 7
         semver-major-days: 30
@@ -147,6 +261,8 @@ updates:
     - package-ecosystem: github-actions
       directory: /
       target-branch: release-v0.34.x
+      commit-message:
+        prefix: '[release-v0.34.x]'
       schedule:
         interval: weekly
       labels:
@@ -155,124 +271,14 @@ updates:
         - release-note-none
         - kind/misc
       ignore:
-        - dependency-name: '*'
-          update-types:
-            - version-update:semver-major
-            - version-update:semver-minor
-      cooldown:
-        default-days: 7
-        semver-major-days: 30
-        semver-minor-days: 7
-        semver-patch-days: 3
-    - package-ecosystem: gomod
-      directory: /
-      target-branch: release-v0.33.x
-      schedule:
-        interval: weekly
-      labels:
-        - ok-to-test
-        - dependencies
-        - release-note-none
-        - kind/misc
-      ignore:
-        - dependency-name: k8s.io/*
-          update-types:
-            - version-update:semver-major
-            - version-update:semver-minor
-        - dependency-name: knative.dev/*
-          update-types:
-            - version-update:semver-major
-            - version-update:semver-minor
-        - dependency-name: go.opentelemetry.io/*
-          update-types:
-            - version-update:semver-major
-            - version-update:semver-minor
         - dependency-name: '*'
           update-types:
             - version-update:semver-major
             - version-update:semver-minor
       groups:
-        all:
+        codeql-action:
             patterns:
-                - '*'
+                - github/codeql-action
+                - github/codeql-action/*
       cooldown:
         default-days: 7
-        semver-major-days: 30
-        semver-minor-days: 7
-        semver-patch-days: 3
-    - package-ecosystem: github-actions
-      directory: /
-      target-branch: release-v0.33.x
-      schedule:
-        interval: weekly
-      labels:
-        - ok-to-test
-        - dependencies
-        - release-note-none
-        - kind/misc
-      ignore:
-        - dependency-name: '*'
-          update-types:
-            - version-update:semver-major
-            - version-update:semver-minor
-      cooldown:
-        default-days: 7
-        semver-major-days: 30
-        semver-minor-days: 7
-        semver-patch-days: 3
-    - package-ecosystem: gomod
-      directory: /
-      target-branch: release-v0.27.x
-      schedule:
-        interval: weekly
-      labels:
-        - ok-to-test
-        - dependencies
-        - release-note-none
-        - kind/misc
-      ignore:
-        - dependency-name: k8s.io/*
-          update-types:
-            - version-update:semver-major
-            - version-update:semver-minor
-        - dependency-name: knative.dev/*
-          update-types:
-            - version-update:semver-major
-            - version-update:semver-minor
-        - dependency-name: go.opentelemetry.io/*
-          update-types:
-            - version-update:semver-major
-            - version-update:semver-minor
-        - dependency-name: '*'
-          update-types:
-            - version-update:semver-major
-            - version-update:semver-minor
-      groups:
-        all:
-            patterns:
-                - '*'
-      cooldown:
-        default-days: 7
-        semver-major-days: 30
-        semver-minor-days: 7
-        semver-patch-days: 3
-    - package-ecosystem: github-actions
-      directory: /
-      target-branch: release-v0.27.x
-      schedule:
-        interval: weekly
-      labels:
-        - ok-to-test
-        - dependencies
-        - release-note-none
-        - kind/misc
-      ignore:
-        - dependency-name: '*'
-          update-types:
-            - version-update:semver-major
-            - version-update:semver-minor
-      cooldown:
-        default-days: 7
-        semver-major-days: 30
-        semver-minor-days: 7
-        semver-patch-days: 3
